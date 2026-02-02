@@ -14,8 +14,26 @@ model User {
   emailVerified DateTime?
   image         String?
   password      String?
+  library       Library?
   accounts      Account[]
   sessions      Session[]
+}
+
+model Library {
+  id        String   @id @default(cuid())
+  name      String
+  userId    String   @unique
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  shelves   Shelf[]
+  createdAt DateTime @default(now())
+}
+
+model Shelf {
+  id        String   @id @default(cuid())
+  name      String
+  libraryId String
+  library   Library  @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+  createdAt DateTime @default(now())
 }
 
 model Account {
