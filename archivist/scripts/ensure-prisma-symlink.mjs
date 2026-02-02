@@ -1,4 +1,11 @@
-import { existsSync, lstatSync, symlinkSync } from "fs";
+import {
+  existsSync,
+  lstatSync,
+  readlinkSync,
+  rmSync,
+  symlinkSync,
+  unlinkSync,
+} from "fs";
 import { dirname, join } from "path";
 import { createRequire } from "module";
 
@@ -24,9 +31,15 @@ if (!existsSync(prismaDir)) {
 
 if (existsSync(target)) {
   const stat = lstatSync(target);
-  if (stat.isSymbolicLink() || stat.isDirectory()) {
+  if (stat.isSymbolicLink()) {
+    const linkTarget = readlinkSync(target);
+    if (linkTarget === prismaDir) {
+      process.exit(0);
+    }
+    unlinkSync(target);
+  } else if (stat.isDirectory()) {
     process.exit(0);
   }
 }
 
-symlinkSync("../.prisma", target, "junction");
+symlinkSync(prismaDir, target, "junction");
