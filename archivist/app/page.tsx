@@ -1,7 +1,10 @@
 import Image from "next/image";
+import Link from "next/link";
+import { auth, signOut } from "@/auth";
 
-export default function Home() {
-  const isLoggedIn = false;
+export default async function Home() {
+  const session = await auth();
+  const isLoggedIn = Boolean(session?.user);
   const libraryItems = [
     {
       title: "Blade Runner",
@@ -99,21 +102,40 @@ export default function Home() {
           <div className="flex items-center gap-3 text-sm">
             {isLoggedIn ? (
               <>
-                <button className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink">
+                <Link
+                  className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                  href="#"
+                >
                   Settings
-                </button>
-                <button className="rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong">
+                </Link>
+                <Link
+                  className="rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                  href="#"
+                >
                   Add item
-                </button>
+                </Link>
+                <form
+                  action={async () => {
+                    "use server";
+                    await signOut({ redirectTo: "/" });
+                  }}
+                >
+                  <button
+                    className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                    type="submit"
+                  >
+                    Sign out
+                  </button>
+                </form>
               </>
             ) : (
               <>
-                <button className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink">
+                <Link
+                  className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                  href="/login"
+                >
                   Sign in
-                </button>
-                <button className="rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong">
-                  Create account
-                </button>
+                </Link>
               </>
             )}
           </div>
@@ -150,12 +172,18 @@ export default function Home() {
                   </>
                 ) : (
                   <>
-                    <button className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong">
-                      Start a calm catalog
-                    </button>
-                    <button className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink">
-                      Take a tour
-                    </button>
+                    <Link
+                      className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                      href="/login"
+                    >
+                      Sign in to continue
+                    </Link>
+                    <Link
+                      className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink"
+                      href="#about"
+                    >
+                      Learn more
+                    </Link>
                   </>
                 )}
               </div>
@@ -187,6 +215,7 @@ export default function Home() {
           </header>
 
           <section
+            id="about"
             className="mt-16 rounded-3xl border border-line bg-card p-8 shadow-sm animate-fade-up"
             style={{ animationDelay: "220ms" }}
           >
