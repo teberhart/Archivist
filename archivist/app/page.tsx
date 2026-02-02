@@ -12,11 +12,13 @@ export default async function Home({
   const isLoggedIn = Boolean(session?.user);
   const params = searchParams ? await searchParams : {};
   const showSignupSuccess = params?.signup === "success";
-  type LibraryItem = Awaited<
-    ReturnType<typeof prisma.product.findMany>
-  >[number];
-
-  const libraryItems: LibraryItem[] = isLoggedIn
+  const libraryItems: {
+    id: string;
+    name: string;
+    type: string;
+    year: number;
+    shelf: { name: string };
+  }[] = isLoggedIn
     ? await prisma.product.findMany({
         where: {
           shelf: {
@@ -25,8 +27,16 @@ export default async function Home({
             },
           },
         },
-        include: {
-          shelf: true,
+        select: {
+          id: true,
+          name: true,
+          type: true,
+          year: true,
+          shelf: {
+            select: {
+              name: true,
+            },
+          },
         },
         take: 4,
         orderBy: {
@@ -257,7 +267,7 @@ export default async function Home({
                       No items in your library yet.
                     </li>
                   ) : (
-                    libraryItems.map((item: LibraryItem, index: number) => (
+                    libraryItems.map((item, index) => (
                       <li
                         key={item.id}
                         className="rounded-2xl border border-line bg-wash p-5 animate-fade-up"
