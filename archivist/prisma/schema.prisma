@@ -33,6 +33,17 @@ model Shelf {
   name      String
   libraryId String
   library   Library  @relation(fields: [libraryId], references: [id], onDelete: Cascade)
+  products  Product[]
+  createdAt DateTime @default(now())
+}
+
+model Product {
+  id        String   @id @default(cuid())
+  name      String
+  type      String
+  year      Int
+  shelfId   String
+  shelf     Shelf    @relation(fields: [shelfId], references: [id], onDelete: Cascade)
   createdAt DateTime @default(now())
 }
 

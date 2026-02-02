@@ -15,7 +15,64 @@ async function main() {
 
   await prisma.user.upsert({
     where: { email: "thibaut.eberhart@gmail.com" },
-    update: {},
+    update: {
+      name: "Thibaut Eberhart",
+      library: {
+        upsert: {
+          create: {
+            name: "Thibaut's Library",
+            shelves: {
+              create: [
+                {
+                  name: "Living Room",
+                  products: {
+                    create: [
+                      { name: "Blade Runner", type: "VHS", year: 1982 },
+                      { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                    ],
+                  },
+                },
+                {
+                  name: "Studio Shelf",
+                  products: {
+                    create: [
+                      { name: "In Rainbows", type: "CD", year: 2007 },
+                      { name: "The Matrix", type: "Blu-ray", year: 1999 },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+          update: {
+            name: "Thibaut's Library",
+            shelves: {
+              deleteMany: {},
+              create: [
+                {
+                  name: "Living Room",
+                  products: {
+                    create: [
+                      { name: "Blade Runner", type: "VHS", year: 1982 },
+                      { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                    ],
+                  },
+                },
+                {
+                  name: "Studio Shelf",
+                  products: {
+                    create: [
+                      { name: "In Rainbows", type: "CD", year: 2007 },
+                      { name: "The Matrix", type: "Blu-ray", year: 1999 },
+                    ],
+                  },
+                },
+              ],
+            },
+          },
+        },
+      },
+    },
     create: {
       email: "thibaut.eberhart@gmail.com",
       name: "Thibaut Eberhart",
@@ -25,8 +82,24 @@ async function main() {
           name: "Thibaut's Library",
           shelves: {
             create: [
-              { name: "Living Room" },
-              { name: "Studio Shelf" },
+              {
+                name: "Living Room",
+                products: {
+                  create: [
+                    { name: "Blade Runner", type: "VHS", year: 1982 },
+                    { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                  ],
+                },
+              },
+              {
+                name: "Studio Shelf",
+                products: {
+                  create: [
+                    { name: "In Rainbows", type: "CD", year: 2007 },
+                    { name: "The Matrix", type: "Blu-ray", year: 1999 },
+                  ],
+                },
+              },
             ],
           },
         },
