@@ -105,17 +105,21 @@ export default async function Home({
               Notes
             </a>
           </div>
-          <div className="flex items-center gap-3 text-sm">
+          <div
+            className={`items-center gap-3 text-sm ${
+              isLoggedIn ? "flex" : "hidden md:flex"
+            }`}
+          >
             {isLoggedIn ? (
               <>
                 <Link
-                  className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                  className="hidden rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink md:inline-flex"
                   href="#"
                 >
                   Settings
                 </Link>
                 <Link
-                  className="rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                  className="hidden rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong md:inline-flex"
                   href="#"
                 >
                   Add item
