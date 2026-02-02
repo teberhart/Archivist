@@ -7,7 +7,7 @@ import { prisma } from "@/lib/prisma";
 export const { handlers, auth, signIn, signOut } = NextAuth({
   adapter: PrismaAdapter(prisma),
   session: {
-    strategy: "database",
+    strategy: "jwt",
   },
   pages: {
     signIn: "/login",
@@ -49,9 +49,15 @@ export const { handlers, auth, signIn, signOut } = NextAuth({
     }),
   ],
   callbacks: {
-    session: ({ session, user }) => {
-      if (session.user) {
-        session.user.id = user.id;
+    jwt: ({ token, user }) => {
+      if (user?.id) {
+        token.id = user.id;
+      }
+      return token;
+    },
+    session: ({ session, token }) => {
+      if (session.user && token.id) {
+        session.user.id = String(token.id);
       }
       return session;
     },

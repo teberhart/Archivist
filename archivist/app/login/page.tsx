@@ -10,14 +10,15 @@ const errorMessages: Record<string, string> = {
 export default async function LoginPage({
   searchParams,
 }: {
-  searchParams?: { error?: string };
+  searchParams?: Promise<{ error?: string }>;
 }) {
   const session = await auth();
   if (session?.user) {
     redirect("/");
   }
 
-  const error = searchParams?.error;
+  const params = searchParams ? await searchParams : {};
+  const error = params?.error;
   const message = error ? errorMessages[error] ?? "Unable to sign in." : null;
 
   return (
