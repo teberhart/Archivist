@@ -1,6 +1,7 @@
 import Image from "next/image";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 export default async function Home({
   searchParams,
@@ -11,36 +12,24 @@ export default async function Home({
   const isLoggedIn = Boolean(session?.user);
   const params = searchParams ? await searchParams : {};
   const showSignupSuccess = params?.signup === "success";
-  const libraryItems = [
-    {
-      title: "Blade Runner",
-      format: "4K UHD",
-      year: "1982",
-      location: "Shelf A2",
-      status: "On loan",
-    },
-    {
-      title: "In the Mood for Love",
-      format: "Blu-ray",
-      year: "2000",
-      location: "Shelf B1",
-      status: "Available",
-    },
-    {
-      title: "Kind of Blue",
-      format: "Vinyl",
-      year: "1959",
-      location: "Crate 3",
-      status: "Available",
-    },
-    {
-      title: "Neuromancer",
-      format: "Paperback",
-      year: "1984",
-      location: "Shelf C4",
-      status: "Wishlist",
-    },
-  ];
+  const libraryItems = isLoggedIn
+    ? await prisma.product.findMany({
+        where: {
+          shelf: {
+            library: {
+              userId: session?.user?.id ?? "",
+            },
+          },
+        },
+        include: {
+          shelf: true,
+        },
+        take: 4,
+        orderBy: {
+          createdAt: "desc",
+        },
+      })
+    : [];
   const featureCards = [
     {
       title: "Track every format",
@@ -259,30 +248,36 @@ export default async function Home({
                   </button>
                 </div>
                 <ul className="mt-6 grid gap-4 md:grid-cols-2">
-                  {libraryItems.map((item, index) => (
-                    <li
-                      key={`${item.title}-${item.format}`}
-                      className="rounded-2xl border border-line bg-wash p-5 animate-fade-up"
-                      style={{ animationDelay: `${320 + index * 80}ms` }}
-                    >
-                      <div className="flex items-start justify-between gap-3">
-                        <div>
-                          <p className="text-lg font-semibold text-ink">
-                            {item.title}
-                          </p>
-                          <p className="text-sm text-muted">
-                            {item.format} · {item.year}
-                          </p>
-                        </div>
-                        <span className="rounded-full bg-card px-3 py-1 text-xs text-muted">
-                          {item.status}
-                        </span>
-                      </div>
-                      <p className="mt-4 text-sm text-muted">
-                        Stored in {item.location}
-                      </p>
+                  {libraryItems.length === 0 ? (
+                    <li className="rounded-2xl border border-line bg-wash p-5 text-sm text-muted md:col-span-2">
+                      No items in your library yet.
                     </li>
-                  ))}
+                  ) : (
+                    libraryItems.map((item, index) => (
+                      <li
+                        key={item.id}
+                        className="rounded-2xl border border-line bg-wash p-5 animate-fade-up"
+                        style={{ animationDelay: `${320 + index * 80}ms` }}
+                      >
+                        <div className="flex items-start justify-between gap-3">
+                          <div>
+                            <p className="text-lg font-semibold text-ink">
+                              {item.name}
+                            </p>
+                            <p className="text-sm text-muted">
+                              {item.type} · {item.year}
+                            </p>
+                          </div>
+                          <span className="rounded-full bg-card px-3 py-1 text-xs text-muted">
+                            Available
+                          </span>
+                        </div>
+                        <p className="mt-4 text-sm text-muted">
+                          Stored in {item.shelf.name}
+                        </p>
+                      </li>
+                    ))
+                  )}
                 </ul>
               </>
             ) : (

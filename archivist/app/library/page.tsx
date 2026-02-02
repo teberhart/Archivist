@@ -5,12 +5,6 @@ import { prisma } from "@/lib/prisma";
 import { deleteShelf } from "@/app/library/actions";
 import DeleteShelfForm from "@/app/library/DeleteShelfForm";
 
-const placeholderItems = [
-  "Media item placeholder",
-  "Media item placeholder",
-  "Media item placeholder",
-];
-
 const statusMessages: Record<string, string> = {
   created: "Shelf added successfully.",
   deleted: "Shelf deleted.",
@@ -39,7 +33,7 @@ export default async function LibraryPage({
   try {
     library = await prisma.library.findUnique({
       where: { userId },
-      include: { shelves: true },
+      include: { shelves: { include: { products: true } } },
     });
   } catch (error) {
     console.error(error);
@@ -147,14 +141,28 @@ export default async function LibraryPage({
                     </div>
                   </div>
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    {placeholderItems.map((item, itemIndex) => (
-                      <div
-                        key={`${shelf.id}-${itemIndex}`}
-                        className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted"
-                      >
-                        {item}
+                    {shelf.products.length === 0 ? (
+                      <div className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted sm:col-span-3">
+                        No items on this shelf yet.
                       </div>
-                    ))}
+                    ) : (
+                      shelf.products.map((product) => (
+                        <div
+                          key={product.id}
+                          className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted"
+                        >
+                          <p className="text-base font-semibold text-ink">
+                            {product.name}
+                          </p>
+                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">
+                            {product.type}
+                          </p>
+                          <p className="mt-2 text-xs text-muted">
+                            Released {product.year}
+                          </p>
+                        </div>
+                      ))
+                    )}
                   </div>
                 </section>
               ))}
