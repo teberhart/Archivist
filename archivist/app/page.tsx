@@ -95,9 +95,9 @@ export default async function Home({
             </div>
           </div>
           <div className="hidden items-center gap-6 text-sm text-muted md:flex">
-            <a className="hover:text-ink" href="#">
+            <Link className="hover:text-ink" href="/library">
               Library
-            </a>
+            </Link>
             <a className="hover:text-ink" href="#">
               Lending
             </a>
@@ -187,9 +187,12 @@ export default async function Home({
                     <button className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong">
                       Add new item
                     </button>
-                    <button className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink">
+                    <Link
+                      className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink"
+                      href="/library"
+                    >
                       View library
-                    </button>
+                    </Link>
                   </>
                 ) : (
                   <>
