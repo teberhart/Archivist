@@ -12,7 +12,11 @@ export default async function Home({
   const isLoggedIn = Boolean(session?.user);
   const params = searchParams ? await searchParams : {};
   const showSignupSuccess = params?.signup === "success";
-  const libraryItems = isLoggedIn
+  type LibraryItem = Awaited<
+    ReturnType<typeof prisma.product.findMany>
+  >[number];
+
+  const libraryItems: LibraryItem[] = isLoggedIn
     ? await prisma.product.findMany({
         where: {
           shelf: {
@@ -253,7 +257,7 @@ export default async function Home({
                       No items in your library yet.
                     </li>
                   ) : (
-                    libraryItems.map((item, index) => (
+                    libraryItems.map((item: LibraryItem, index: number) => (
                       <li
                         key={item.id}
                         className="rounded-2xl border border-line bg-wash p-5 animate-fade-up"
