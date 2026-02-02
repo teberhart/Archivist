@@ -4,10 +4,14 @@
   "private": true,
   "scripts": {
     "dev": "next dev",
-    "build": "next build",
+    "build": "pnpm prisma generate && pnpm prisma:link && next build",
     "start": "next start",
     "lint": "eslint",
+    "postinstall": "prisma generate && node scripts/ensure-prisma-symlink.mjs",
     "prisma:link": "node scripts/ensure-prisma-symlink.mjs"
+  },
+  "engines": {
+    "node": ">=20.19.0"
   },
   "dependencies": {
     "@auth/prisma-adapter": "^2.11.1",
