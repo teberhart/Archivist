@@ -1,13 +1,19 @@
 import Link from "next/link";
 import { redirect } from "next/navigation";
+import bcrypt from "bcrypt";
+import { Prisma } from "@prisma/client";
 import { auth, signIn } from "@/auth";
+import { prisma } from "@/lib/prisma";
 
 const errorMessages: Record<string, string> = {
-  CredentialsSignin: "Email or password didn\'t match.",
-  AccessDenied: "Access denied. Please contact support.",
+  missing: "Please fill in all fields.",
+  invalid: "Enter a valid email address.",
+  duplicate: "An account with this email already exists.",
 };
 
-export default async function LoginPage({
+const emailPattern = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
+
+export default async function SignupPage({
   searchParams,
 }: {
   searchParams?: Promise<{ error?: string }>;
@@ -19,7 +25,7 @@ export default async function LoginPage({
 
   const params = searchParams ? await searchParams : {};
   const error = params?.error;
-  const message = error ? errorMessages[error] ?? "Unable to sign in." : null;
+  const message = error ? errorMessages[error] ?? "Unable to sign up." : null;
 
   return (
     <div className="relative min-h-screen overflow-hidden text-ink">
@@ -58,13 +64,13 @@ export default async function LoginPage({
           <div className="w-full max-w-md rounded-3xl border border-line bg-card p-8 shadow-sm animate-fade-up">
             <div className="space-y-3">
               <p className="text-xs uppercase tracking-[0.3em] text-muted">
-                Welcome back
+                Start your archive
               </p>
               <h1 className="text-3xl font-[var(--font-display)]">
-                Sign in to Archivist
+                Create your Archivist account
               </h1>
               <p className="text-sm text-muted">
-                Access is currently limited to existing accounts.
+                No email verification for now. We will trust your inputs.
               </p>
             </div>
 
@@ -78,20 +84,74 @@ export default async function LoginPage({
               className="mt-6 space-y-4"
               action={async (formData) => {
                 "use server";
-                const email = formData.get("email");
-                const password = formData.get("password");
+                const rawName = formData.get("name");
+                const rawEmail = formData.get("email");
+                const rawPassword = formData.get("password");
 
-                if (typeof email !== "string" || typeof password !== "string") {
-                  return;
+                if (
+                  typeof rawName !== "string" ||
+                  typeof rawEmail !== "string" ||
+                  typeof rawPassword !== "string"
+                ) {
+                  redirect("/signup?error=missing");
+                }
+
+                const name = rawName.trim();
+                const email = rawEmail.trim().toLowerCase();
+                const password = rawPassword.trim();
+
+                if (!name || !email || !password) {
+                  redirect("/signup?error=missing");
+                }
+
+                if (!emailPattern.test(email)) {
+                  redirect("/signup?error=invalid");
+                }
+
+                const hashed = await bcrypt.hash(password, 12);
+                const libraryName = `${name}'s Library`;
+
+                try {
+                  await prisma.user.create({
+                    data: {
+                      name,
+                      email,
+                      password: hashed,
+                      library: {
+                        create: {
+                          name: libraryName,
+                        },
+                      },
+                    },
+                  });
+                } catch (error) {
+                  if (
+                    error instanceof Prisma.PrismaClientKnownRequestError &&
+                    error.code === "P2002"
+                  ) {
+                    redirect("/signup?error=duplicate");
+                  }
+                  throw error;
                 }
 
                 await signIn("credentials", {
                   email,
                   password,
-                  redirectTo: "/",
+                  redirectTo: "/?signup=success",
                 });
               }}
             >
+              <label className="block text-sm text-muted" htmlFor="name">
+                Name
+                <input
+                  id="name"
+                  name="name"
+                  type="text"
+                  autoComplete="name"
+                  required
+                  className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+                />
+              </label>
               <label className="block text-sm text-muted" htmlFor="email">
                 Email address
                 <input
@@ -109,7 +169,7 @@ export default async function LoginPage({
                   id="password"
                   name="password"
                   type="password"
-                  autoComplete="current-password"
+                  autoComplete="new-password"
                   required
                   className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
                 />
@@ -118,14 +178,14 @@ export default async function LoginPage({
                 className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
                 type="submit"
               >
-                Sign in
+                Create account
               </button>
             </form>
 
             <p className="mt-6 text-xs text-muted">
-              New here?{" "}
-              <Link className="text-ink underline" href="/signup">
-                Create an account
+              Already have an account?{" "}
+              <Link className="text-ink underline" href="/login">
+                Sign in
               </Link>
               .
             </p>

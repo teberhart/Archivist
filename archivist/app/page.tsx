@@ -2,9 +2,15 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 
-export default async function Home() {
+export default async function Home({
+  searchParams,
+}: {
+  searchParams?: Promise<{ signup?: string }>;
+}) {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
+  const params = searchParams ? await searchParams : {};
+  const showSignupSuccess = params?.signup === "success";
   const libraryItems = [
     {
       title: "Blade Runner",
@@ -136,10 +142,21 @@ export default async function Home() {
                 >
                   Sign in
                 </Link>
+                <Link
+                  className="rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                  href="/signup"
+                >
+                  Create account
+                </Link>
               </>
             )}
           </div>
         </nav>
+        {isLoggedIn && showSignupSuccess ? (
+          <div className="mt-6 rounded-2xl border border-line bg-wash px-5 py-4 text-sm text-ink animate-fade-up">
+            Account created. Welcome to Archivist.
+          </div>
+        ) : null}
 
         <main id="main" className="flex-1">
           <header
@@ -174,15 +191,15 @@ export default async function Home() {
                   <>
                     <Link
                       className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
-                      href="/login"
+                      href="/signup"
                     >
-                      Sign in to continue
+                      Create account
                     </Link>
                     <Link
                       className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink"
-                      href="#about"
+                      href="/login"
                     >
-                      Learn more
+                      Sign in
                     </Link>
                   </>
                 )}
