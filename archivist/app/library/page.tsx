@@ -2,6 +2,8 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import { deleteShelf } from "@/app/library/actions";
+import DeleteShelfForm from "@/app/library/DeleteShelfForm";
 
 const placeholderItems = [
   "Media item placeholder",
@@ -9,13 +11,27 @@ const placeholderItems = [
   "Media item placeholder",
 ];
 
-export default async function LibraryPage() {
+const statusMessages: Record<string, string> = {
+  created: "Shelf added successfully.",
+  deleted: "Shelf deleted.",
+  "delete-missing": "Unable to delete shelf.",
+};
+
+export default async function LibraryPage({
+  searchParams,
+}: {
+  searchParams?: Promise<{ status?: string }>;
+}) {
   const session = await auth();
   const userId = session?.user?.id;
 
   if (!userId) {
     redirect("/login");
   }
+
+  const params = searchParams ? await searchParams : {};
+  const status = params?.status ?? "";
+  const statusMessage = status ? statusMessages[status] : null;
 
   let library = null;
   let errorMessage: string | null = null;
@@ -64,7 +80,7 @@ export default async function LibraryPage() {
             </Link>
             <Link
               className="rounded-full bg-accent px-4 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
-              href="#"
+              href="/library/add-shelf"
             >
               Add shelf
             </Link>
@@ -84,6 +100,12 @@ export default async function LibraryPage() {
               formats and spaces organized.
             </p>
           </header>
+
+          {statusMessage ? (
+            <div className="mt-6 rounded-2xl border border-amber-200 bg-amber-50 px-5 py-4 text-sm text-amber-900 animate-fade-up">
+              {statusMessage}
+            </div>
+          ) : null}
 
           {errorMessage ? (
             <div className="mt-8 rounded-3xl border border-line bg-card p-6 text-sm text-ink">
@@ -117,9 +139,12 @@ export default async function LibraryPage() {
                         {shelf.name}
                       </h2>
                     </div>
-                    <button className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink">
-                      Add item
-                    </button>
+                    <div className="flex items-center gap-2">
+                      <button className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink">
+                        Add item
+                      </button>
+                      <DeleteShelfForm shelfId={shelf.id} action={deleteShelf} />
+                    </div>
                   </div>
                   <div className="mt-6 grid gap-3 sm:grid-cols-3">
                     {placeholderItems.map((item, itemIndex) => (
