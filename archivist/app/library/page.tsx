@@ -2,7 +2,12 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteShelf, updateShelf } from "@/app/library/actions";
+import {
+  createProduct,
+  deleteShelf,
+  updateProduct,
+  updateShelf,
+} from "@/app/library/actions";
 import ShelfCard from "@/app/library/ShelfCard";
 
 const statusMessages: Record<string, string> = {
@@ -10,6 +15,18 @@ const statusMessages: Record<string, string> = {
   deleted: "Shelf deleted.",
   "delete-missing": "Unable to delete shelf.",
   updated: "Shelf updated.",
+  "item-created": "Item added to shelf.",
+  "item-missing": "Please complete all item fields.",
+  "item-invalid":
+    "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-year": "Please enter a valid year.",
+  "item-shelf": "Unable to find that shelf.",
+  "item-updated": "Item updated.",
+  "item-edit-missing": "Please complete all item fields.",
+  "item-edit-invalid":
+    "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-edit-year": "Please enter a valid year.",
+  "item-edit-notfound": "Unable to find that item.",
   "edit-missing": "Please enter a shelf name.",
   "edit-invalid":
     "Shelf names must be 2-50 characters and use letters (including accents), numbers, spaces, apostrophes, ampersands, periods, and dashes.",
@@ -131,6 +148,8 @@ export default async function LibraryPage({
                   shelf={shelf}
                   index={index}
                   updateShelf={updateShelf}
+                  createProduct={createProduct}
+                  updateProduct={updateProduct}
                   deleteShelf={deleteShelf}
                 />
               ))}

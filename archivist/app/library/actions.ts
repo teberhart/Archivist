@@ -5,6 +5,11 @@ import { revalidatePath } from "next/cache";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isValidShelfName } from "@/app/library/shelfValidation";
+import {
+  isValidProductName,
+  isValidProductType,
+  isValidProductYear,
+} from "@/app/library/productValidation";
 
 export async function createShelf(formData: FormData) {
   const session = await auth();
@@ -174,4 +179,148 @@ export async function updateShelf(formData: FormData) {
 
   revalidatePath("/library");
   redirect("/library?status=updated");
+}
+
+export async function createProduct(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const rawShelfId = formData.get("shelfId");
+  const rawName = formData.get("name");
+  const rawType = formData.get("type");
+  const rawYear = formData.get("year");
+
+  if (
+    typeof rawShelfId !== "string" ||
+    typeof rawName !== "string" ||
+    typeof rawType !== "string" ||
+    typeof rawYear !== "string"
+  ) {
+    redirect("/library?status=item-missing");
+  }
+
+  const shelfId = rawShelfId.trim();
+  const name = rawName.trim();
+  const type = rawType.trim();
+  const year = Number.parseInt(rawYear, 10);
+
+  if (!shelfId || !name || !type || Number.isNaN(year)) {
+    redirect("/library?status=item-missing");
+  }
+
+  if (!isValidProductName(name) || !isValidProductType(type)) {
+    redirect("/library?status=item-invalid");
+  }
+
+  if (!isValidProductYear(year)) {
+    redirect("/library?status=item-year");
+  }
+
+  const library = await prisma.library.findUnique({
+    where: { userId },
+  });
+
+  if (!library) {
+    redirect("/library?status=nolibrary");
+  }
+
+  const shelf = await prisma.shelf.findFirst({
+    where: {
+      id: shelfId,
+      libraryId: library.id,
+    },
+  });
+
+  if (!shelf) {
+    redirect("/library?status=item-shelf");
+  }
+
+  await prisma.product.create({
+    data: {
+      name,
+      type,
+      year,
+      shelfId: shelf.id,
+    },
+  });
+
+  revalidatePath("/library");
+  redirect("/library?status=item-created");
+}
+
+export async function updateProduct(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const rawProductId = formData.get("productId");
+  const rawName = formData.get("name");
+  const rawType = formData.get("type");
+  const rawYear = formData.get("year");
+
+  if (
+    typeof rawProductId !== "string" ||
+    typeof rawName !== "string" ||
+    typeof rawType !== "string" ||
+    typeof rawYear !== "string"
+  ) {
+    redirect("/library?status=item-edit-missing");
+  }
+
+  const productId = rawProductId.trim();
+  const name = rawName.trim();
+  const type = rawType.trim();
+  const year = Number.parseInt(rawYear, 10);
+
+  if (!productId || !name || !type || Number.isNaN(year)) {
+    redirect("/library?status=item-edit-missing");
+  }
+
+  if (!isValidProductName(name) || !isValidProductType(type)) {
+    redirect("/library?status=item-edit-invalid");
+  }
+
+  if (!isValidProductYear(year)) {
+    redirect("/library?status=item-edit-year");
+  }
+
+  const library = await prisma.library.findUnique({
+    where: { userId },
+  });
+
+  if (!library) {
+    redirect("/library?status=nolibrary");
+  }
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shelf: {
+        libraryId: library.id,
+      },
+    },
+  });
+
+  if (!product) {
+    redirect("/library?status=item-edit-notfound");
+  }
+
+  await prisma.product.update({
+    where: { id: product.id },
+    data: {
+      name,
+      type,
+      year,
+    },
+  });
+
+  revalidatePath("/library");
+  redirect("/library?status=item-updated");
 }
