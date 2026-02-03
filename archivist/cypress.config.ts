@@ -2,6 +2,7 @@ import { defineConfig } from "cypress";
 import { execSync } from "node:child_process";
 import path from "node:path";
 import dotenv from "dotenv";
+import react from "@vitejs/plugin-react";
 
 const envFiles = [".env", ".env.local"];
 
@@ -31,8 +32,16 @@ export default defineConfig({
   },
   component: {
     devServer: {
-      framework: "next",
-      bundler: "webpack",
+      framework: "react",
+      bundler: "vite",
+      viteConfig: {
+        plugins: [react()],
+        resolve: {
+          alias: {
+            "@": path.resolve(__dirname),
+          },
+        },
+      },
     },
     supportFile: "cypress/support/component.ts",
     specPattern: "cypress/component/**/*.cy.{js,jsx,ts,tsx}",

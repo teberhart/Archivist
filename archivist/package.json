@@ -34,18 +34,21 @@
   },
   "devDependencies": {
     "@cypress/react": "^9.0.1",
+    "@cypress/vite-dev-server": "^5.0.1",
     "@cypress/webpack-dev-server": "^3.9.0",
     "@tailwindcss/postcss": "^4",
     "@types/bcrypt": "^6.0.0",
     "@types/node": "^20",
     "@types/react": "^19",
     "@types/react-dom": "^19",
+    "@vitejs/plugin-react": "^4.3.1",
     "cypress": "^14.5.1",
     "dotenv": "^16.6.1",
     "eslint": "^9",
     "eslint-config-next": "16.1.6",
     "prisma": "^7.3.0",
     "tailwindcss": "^4",
-    "typescript": "^5"
+    "typescript": "^5",
+    "vite": "^5.4.11"
   }
 }
