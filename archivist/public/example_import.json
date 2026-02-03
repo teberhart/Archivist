@@ -1,0 +1,14 @@
+{
+  "Example shelf": [
+    {
+      "Name": "Bienvenida",
+      "Year": 2001,
+      "Type": "CD"
+    },
+    {
+      "Name": "Wages of Sin",
+      "Year": 2002,
+      "Type": "CD"
+    }
+  ]
+}

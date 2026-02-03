@@ -18,6 +18,25 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 - Styling tokens live in `app/globals.css`.
 - Fonts are loaded in `app/layout.tsx` using `next/font`.
 
+## Testing (Cypress)
+
+This project uses Cypress for both e2e and component testing.
+
+Prerequisites:
+- `DATABASE_URL` must be set (Cypress uses the Prisma seed script for test data).
+
+Run locally:
+- `pnpm cypress:open` (e2e runner)
+- `pnpm cypress:open:ct` (component runner)
+
+Run headless:
+- `pnpm cypress:run` (e2e)
+- `pnpm cypress:run:ct` (component)
+- `pnpm cypress:run:ci` (CI-friendly, headless, explicit browser)
+
+Test data:
+- e2e specs call `cy.task("db:seed")`, which runs `node prisma/seed.cjs`.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

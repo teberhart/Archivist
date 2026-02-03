@@ -10,6 +10,10 @@ import {
   isValidProductType,
   isValidProductYear,
 } from "@/app/library/productValidation";
+import {
+  parseImportText,
+  type ImportParseResult,
+} from "@/app/library/importParser";
 
 export async function createShelf(formData: FormData) {
   const session = await auth();
@@ -323,4 +327,204 @@ export async function updateProduct(formData: FormData) {
 
   revalidatePath("/library");
   redirect("/library?status=item-updated");
+}
+
+export type ImportProductsState = {
+  status: "idle" | "success" | "partial" | "error";
+  message: string;
+  summary?: {
+    shelvesCreated: number;
+    shelvesMatched: number;
+    productsCreated: number;
+    productsUpdated: number;
+  };
+  errors?: string[];
+};
+
+const MAX_IMPORT_BYTES = 1024 * 1024;
+
+function createImportError(message: string, errors?: string[]): ImportProductsState {
+  return {
+    status: "error",
+    message,
+    errors,
+  };
+}
+
+export async function importProducts(
+  _prevState: ImportProductsState,
+  formData: FormData,
+): Promise<ImportProductsState> {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const file = formData.get("file");
+  if (!(file instanceof File)) {
+    return createImportError("Please upload a JSON file.");
+  }
+
+  if (file.size > MAX_IMPORT_BYTES) {
+    return createImportError("The JSON file is too large (max 1MB).");
+  }
+
+  const isJson =
+    file.type === "application/json" ||
+    file.name.toLowerCase().endsWith(".json");
+  if (!isJson) {
+    return createImportError("The upload must be a .json file.");
+  }
+
+  const text = await file.text();
+  if (!text.trim()) {
+    return createImportError("The JSON file is empty.");
+  }
+
+  const parsed: ImportParseResult = parseImportText(text);
+  if (parsed.shelves.length === 0) {
+    return createImportError(
+      "No valid shelves or products were found in the file.",
+      parsed.errors,
+    );
+  }
+
+  const library = await prisma.library.findUnique({
+    where: { userId },
+    include: { shelves: { include: { products: true } } },
+  });
+
+  if (!library) {
+    return createImportError("No library found for your account.");
+  }
+
+  const shelfMap = new Map<
+    string,
+    {
+      id: string;
+      name: string;
+      products: { id: string; name: string }[];
+    }
+  >();
+
+  library.shelves.forEach((shelf) => {
+    shelfMap.set(shelf.name.toLowerCase(), {
+      id: shelf.id,
+      name: shelf.name,
+      products: shelf.products.map((product) => ({
+        id: product.id,
+        name: product.name,
+      })),
+    });
+  });
+
+  let shelvesCreated = 0;
+  let shelvesMatched = 0;
+  let productsCreated = 0;
+  let productsUpdated = 0;
+
+  const errors: string[] = [...parsed.errors];
+
+  for (const shelfInput of parsed.shelves) {
+    const normalizedShelf = shelfInput.name.toLowerCase();
+    let shelf = shelfMap.get(normalizedShelf);
+
+    if (!shelf) {
+      try {
+        const created = await prisma.shelf.create({
+          data: {
+            name: shelfInput.name,
+            libraryId: library.id,
+          },
+        });
+        shelf = {
+          id: created.id,
+          name: created.name,
+          products: [],
+        };
+        shelfMap.set(normalizedShelf, shelf);
+        shelvesCreated += 1;
+      } catch (error) {
+        errors.push(`Shelf "${shelfInput.name}" could not be created.`);
+        continue;
+      }
+    } else {
+      shelvesMatched += 1;
+    }
+
+    const productMap = new Map<string, { id: string; name: string }>();
+    shelf.products.forEach((product) => {
+      productMap.set(product.name.toLowerCase(), product);
+    });
+
+    for (const productInput of shelfInput.products) {
+      const normalizedProduct = productInput.name.toLowerCase();
+      const existing = productMap.get(normalizedProduct);
+
+      if (existing) {
+        try {
+          await prisma.product.update({
+            where: { id: existing.id },
+            data: {
+              name: productInput.name,
+              type: productInput.type,
+              year: productInput.year,
+            },
+          });
+          productsUpdated += 1;
+        } catch (error) {
+          errors.push(
+            `Product "${productInput.name}" on shelf "${shelfInput.name}" could not be updated.`,
+          );
+        }
+      } else {
+        try {
+          const created = await prisma.product.create({
+            data: {
+              name: productInput.name,
+              type: productInput.type,
+              year: productInput.year,
+              shelfId: shelf.id,
+            },
+          });
+          productMap.set(normalizedProduct, {
+            id: created.id,
+            name: created.name,
+          });
+          productsCreated += 1;
+        } catch (error) {
+          errors.push(
+            `Product "${productInput.name}" on shelf "${shelfInput.name}" could not be created.`,
+          );
+        }
+      }
+    }
+  }
+
+  revalidatePath("/library");
+  revalidatePath("/");
+
+  const summary = {
+    shelvesCreated,
+    shelvesMatched,
+    productsCreated,
+    productsUpdated,
+  };
+
+  if (errors.length > 0) {
+    return {
+      status: "partial",
+      message: "Import completed with some issues.",
+      summary,
+      errors,
+    };
+  }
+
+  return {
+    status: "success",
+    message: "Import completed successfully.",
+    summary,
+  };
 }

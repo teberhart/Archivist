@@ -9,6 +9,7 @@ import {
   updateShelf,
 } from "@/app/library/actions";
 import ShelfCard from "@/app/library/ShelfCard";
+import ImportProductsModal from "@/app/library/ImportProductsModal";
 
 const statusMessages: Record<string, string> = {
   created: "Shelf added successfully.",
@@ -38,7 +39,7 @@ const statusMessages: Record<string, string> = {
 export default async function LibraryPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string }>;
+  searchParams?: Promise<{ status?: string; import?: string }>;
 }) {
   const session = await auth();
   const userId = session?.user?.id;
@@ -50,6 +51,7 @@ export default async function LibraryPage({
   const params = searchParams ? await searchParams : {};
   const status = params?.status ?? "";
   const statusMessage = status ? statusMessages[status] : null;
+  const importOpen = params?.import === "1" || params?.import === "true";
 
   let library = null;
   let errorMessage: string | null = null;
@@ -96,6 +98,10 @@ export default async function LibraryPage({
             >
               Back to home
             </Link>
+            <ImportProductsModal
+              buttonClassName="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+              initialOpen={importOpen}
+            />
             <Link
               className="rounded-full bg-accent px-4 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
               href="/library/add-shelf"

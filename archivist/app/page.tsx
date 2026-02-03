@@ -2,6 +2,7 @@ import Image from "next/image";
 import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
+import ImportProductsModal from "@/app/library/ImportProductsModal";
 
 export default async function Home({
   searchParams,
@@ -121,12 +122,10 @@ export default async function Home({
                 >
                   Settings
                 </Link>
-                <Link
-                  className="hidden rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong md:inline-flex"
-                  href="#"
-                >
-                  Add item
-                </Link>
+                <ImportProductsModal
+                  buttonClassName="hidden rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong md:inline-flex"
+                  buttonLabel="Import products"
+                />
                 <form
                   action={async () => {
                     "use server";
@@ -187,9 +186,10 @@ export default async function Home({
               <div className="flex flex-wrap items-center gap-3">
                 {isLoggedIn ? (
                   <>
-                    <button className="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong">
-                      Add new item
-                    </button>
+                    <ImportProductsModal
+                      buttonClassName="rounded-full bg-accent px-6 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                      buttonLabel="Import products"
+                    />
                     <Link
                       className="rounded-full border border-line px-6 py-3 text-sm text-ink transition hover:border-ink"
                       href="/library"
