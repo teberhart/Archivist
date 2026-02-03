@@ -1,0 +1,21 @@
+{
+  "Import Shelf": [
+    {
+      "Name": "La Haine",
+      "Year": 1995,
+      "Type": "DVD"
+    },
+    {
+      "Name": "Amelie",
+      "Year": 2001,
+      "Type": "Blu-ray"
+    }
+  ],
+  "Living Room": [
+    {
+      "Name": "Blade Runner",
+      "Year": 1982,
+      "Type": "4K"
+    }
+  ]
+}

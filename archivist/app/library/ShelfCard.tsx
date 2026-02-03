@@ -168,6 +168,7 @@ export default function ShelfCard({
                 onChange={(event) => setName(event.target.value)}
                 className="w-full min-w-[16rem] rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
                 autoFocus
+                data-cy="shelf-edit-input"
               />
             </form>
           ) : (
@@ -182,6 +183,7 @@ export default function ShelfCard({
               className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink"
               type="button"
               onClick={startEditing}
+              data-cy="shelf-edit-button"
             >
               Edit
             </button>
@@ -325,6 +327,7 @@ export default function ShelfCard({
                     className="rounded-full border border-line px-3 py-1 text-xs text-ink transition hover:border-ink"
                     type="button"
                     onClick={() => startEditingItem(product)}
+                    data-cy="product-edit-button"
                   >
                     Edit
                   </button>
@@ -349,6 +352,7 @@ export default function ShelfCard({
                   role="dialog"
                   aria-modal="true"
                   aria-labelledby={`${editFormId}-title`}
+                  data-cy="product-edit-modal"
                 >
                   <div className="flex items-start justify-between gap-4">
                     <div>
