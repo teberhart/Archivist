@@ -2,13 +2,20 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { deleteShelf } from "@/app/library/actions";
-import DeleteShelfForm from "@/app/library/DeleteShelfForm";
+import { deleteShelf, updateShelf } from "@/app/library/actions";
+import ShelfCard from "@/app/library/ShelfCard";
 
 const statusMessages: Record<string, string> = {
   created: "Shelf added successfully.",
   deleted: "Shelf deleted.",
   "delete-missing": "Unable to delete shelf.",
+  updated: "Shelf updated.",
+  "edit-missing": "Please enter a shelf name.",
+  "edit-invalid":
+    "Shelf names must be 2-50 characters and use letters (including accents), numbers, spaces, apostrophes, ampersands, periods, and dashes.",
+  "edit-duplicate": "A shelf with that name already exists.",
+  "edit-notfound": "Unable to find that shelf.",
+  nolibrary: "No library found for your account.",
 };
 
 export default async function LibraryPage({
@@ -119,52 +126,13 @@ export default async function LibraryPage({
           {library && library.shelves.length > 0 ? (
             <div className="mt-8 grid gap-6">
               {library.shelves.map((shelf, index) => (
-                <section
+                <ShelfCard
                   key={shelf.id}
-                  className="rounded-3xl border border-line bg-card p-6 shadow-sm animate-fade-up"
-                  style={{ animationDelay: `${150 + index * 80}ms` }}
-                >
-                  <div className="flex flex-wrap items-center justify-between gap-3">
-                    <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-muted">
-                        Shelf
-                      </p>
-                      <h2 className="mt-2 text-2xl font-[var(--font-display)]">
-                        {shelf.name}
-                      </h2>
-                    </div>
-                    <div className="flex items-center gap-2">
-                      <button className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink">
-                        Add item
-                      </button>
-                      <DeleteShelfForm shelfId={shelf.id} action={deleteShelf} />
-                    </div>
-                  </div>
-                  <div className="mt-6 grid gap-3 sm:grid-cols-3">
-                    {shelf.products.length === 0 ? (
-                      <div className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted sm:col-span-3">
-                        No items on this shelf yet.
-                      </div>
-                    ) : (
-                      shelf.products.map((product) => (
-                        <div
-                          key={product.id}
-                          className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted"
-                        >
-                          <p className="text-base font-semibold text-ink">
-                            {product.name}
-                          </p>
-                          <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">
-                            {product.type}
-                          </p>
-                          <p className="mt-2 text-xs text-muted">
-                            Released {product.year}
-                          </p>
-                        </div>
-                      ))
-                    )}
-                  </div>
-                </section>
+                  shelf={shelf}
+                  index={index}
+                  updateShelf={updateShelf}
+                  deleteShelf={deleteShelf}
+                />
               ))}
             </div>
           ) : null}

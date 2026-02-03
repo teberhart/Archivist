@@ -5,6 +5,8 @@ import { createShelf } from "@/app/library/actions";
 
 const statusMessages: Record<string, string> = {
   missing: "Please enter a shelf name.",
+  invalid:
+    "Shelf names must be 2-50 characters and use letters (including accents), numbers, spaces, apostrophes, ampersands, periods, and dashes.",
   duplicate: "A shelf with that name already exists.",
   nolibrary: "No library found for your account.",
 };
@@ -88,9 +90,16 @@ export default async function AddShelfPage({
                   name="name"
                   type="text"
                   required
+                  minLength={2}
+                  maxLength={50}
+                  title="Use 2-50 characters. Letters (including accents), numbers, spaces, apostrophes, ampersands, periods, and dashes only."
                   className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-3 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
                 />
               </label>
+              <p className="text-xs text-muted">
+                Letters (including accents), numbers, spaces, apostrophes,
+                ampersands, periods, and dashes only.
+              </p>
               <button
                 className="w-full rounded-full bg-accent px-5 py-3 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
                 type="submit"
