@@ -115,12 +115,14 @@ describe("Admin access", () => {
       .within(() => {
         cy.contains("button", "Add item").click();
         cy.get("input[name='name']").type(itemName);
+        cy.get("input[name='artist']").type("Pioneer");
         cy.get("select[name='type']").select(typeName);
         cy.get("input[name='year']").clear().type("1994");
         cy.get("input[name='name']").closest("form").submit();
       });
 
     cy.contains(itemName).should("be.visible");
+    cy.contains("Pioneer").should("be.visible");
     cy.getShelfItemCount("Living Room").as("productCountAfterAdd");
 
     cy.visit("/admin?tab=types");

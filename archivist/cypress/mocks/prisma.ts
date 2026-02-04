@@ -27,6 +27,7 @@ let userList: Array<{
 }> = [];
 let productTypeList: Array<{ id: string; name: string }> = [];
 let loanResult: any = null;
+let loanList: any[] = [];
 
 export function __setLibraryResult(result: any) {
   libraryResult = result;
@@ -97,6 +98,10 @@ export function __setLoanResult(result: any) {
   loanResult = result;
 }
 
+export function __setLoanList(list: any[]) {
+  loanList = list;
+}
+
 export const prisma = {
   library: {
     findUnique: async () => {
@@ -132,6 +137,7 @@ export const prisma = {
   },
   loan: {
     findFirst: async () => loanResult,
+    findMany: async () => loanList,
     create: async () => ({}),
     update: async () => ({}),
   },

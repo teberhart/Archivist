@@ -37,7 +37,8 @@ describe("LibraryPage", () => {
             {
               id: "product-1",
               name: "Blade Runner",
-              type: "VHS",
+              artist: "Ridley Scott",
+              type: "Tape",
               year: 1982,
             },
           ],
@@ -54,6 +55,7 @@ describe("LibraryPage", () => {
     cy.contains("Shelf added successfully.").should("be.visible");
     cy.contains("Living Room").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
+    cy.contains("Ridley Scott").should("be.visible");
   });
 
   it("shows the empty state when there are no shelves", () => {

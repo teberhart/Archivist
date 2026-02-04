@@ -4,7 +4,13 @@ const shelf = {
   id: "shelf-1",
   name: "Living Room",
   products: [
-    { id: "product-1", name: "Blade Runner", type: "VHS", year: 1982 },
+    {
+      id: "product-1",
+      name: "Blade Runner",
+      artist: "Ridley Scott",
+      type: "Tape",
+      year: 1982,
+    },
   ],
 };
 
@@ -29,6 +35,7 @@ describe("ShelfCard", () => {
       />,
     );
 
+    cy.contains("Ridley Scott").should("be.visible");
     cy.contains("button", "Edit").click();
     cy.get("[data-cy='shelf-edit-input']")
       .should("be.visible")
@@ -59,6 +66,7 @@ describe("ShelfCard", () => {
 
     cy.contains("button", "Add item").click();
     cy.get("input[name='name']").type("New Item");
+    cy.get("input[name='artist']").type("New Artist");
     cy.get("select[name='type']").select("DVD");
     cy.get("input[name='year']").clear().type("2001");
     cy.contains("button", "Save item").click();
@@ -87,6 +95,7 @@ describe("ShelfCard", () => {
     cy.get("[data-cy='product-edit-button']").click();
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type("Blade Runner 2049");
+    cy.get("input[name='artist']").clear().type("Denis Villeneuve");
     cy.contains("button", "Save changes").click();
     cy.get("@updateProduct").should("have.been.called");
 

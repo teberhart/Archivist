@@ -38,7 +38,7 @@ describe("ImportProductsModal", () => {
         contents: Cypress.Buffer.from(
           JSON.stringify({
             "Living Room": [
-              { Name: "Blade Runner", Type: "VHS", Year: 1982 },
+              { Name: "Blade Runner", Artist: "Ridley Scott", Type: "Tape", Year: 1982 },
             ],
           }),
         ),
@@ -80,8 +80,8 @@ describe("ImportProductsModal", () => {
         contents: Cypress.Buffer.from(
           JSON.stringify({
             "Living Room": [
-              { Name: "Chicken Run", Type: "DVD", Year: 2003 },
-              { Name: "Heat", Type: "Blu-ray", Year: 1995 },
+              { Name: "Chicken Run", Artist: "Peter Lord", Type: "DVD", Year: 2003 },
+              { Name: "Heat", Artist: "Michael Mann", Type: "DVD", Year: 1995 },
             ],
           }),
         ),

@@ -230,7 +230,7 @@ export default function ImportProductsModal({
                     <pre className="mt-3 overflow-auto rounded-2xl bg-white p-3 text-[11px] text-ink">
 {`{
   "Living Room": [
-    { "Name": "Blade Runner", "Type": "Tape", "Year": 1982 }
+    { "Name": "Blade Runner", "Artist": "Ridley Scott", "Type": "Tape", "Year": 1982 }
   ]
 }`}
                     </pre>

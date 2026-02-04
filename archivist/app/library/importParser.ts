@@ -4,9 +4,11 @@ import {
   isValidProductType,
   isValidProductYear,
 } from "@/app/library/productValidation";
+import { isValidArtistName } from "@/app/library/artistValidation";
 
 export type ImportProduct = {
   name: string;
+  artist?: string | null;
   type: string;
   year: number;
 };
@@ -108,6 +110,7 @@ export function parseImportPayload(payload: unknown): ImportParseResult {
       const record = item as Record<string, unknown>;
       const rawName = getKeyValue(record, ["name", "Name"]);
       const rawType = getKeyValue(record, ["type", "Type"]);
+      const rawArtist = getKeyValue(record, ["artist", "Artist"]);
       const rawYear = getKeyValue(record, ["year", "Year"]);
 
       if (typeof rawName !== "string") {
@@ -134,6 +137,7 @@ export function parseImportPayload(payload: unknown): ImportParseResult {
 
       const name = rawName.trim();
       const type = rawType.trim();
+      const artist = typeof rawArtist === "string" ? rawArtist.trim() : "";
 
       if (!name || !type) {
         errors.push(
@@ -163,6 +167,13 @@ export function parseImportPayload(payload: unknown): ImportParseResult {
         return;
       }
 
+      if (artist && !isValidArtistName(artist)) {
+        errors.push(
+          `Shelf "${shelfName}" item ${index + 1} has an invalid Artist.`,
+        );
+        return;
+      }
+
       const normalized = name.toLowerCase();
       if (seenNames.has(normalized)) {
         errors.push(
@@ -172,7 +183,7 @@ export function parseImportPayload(payload: unknown): ImportParseResult {
       }
       seenNames.add(normalized);
 
-      products.push({ name, type, year });
+      products.push({ name, artist: artist || null, type, year });
     });
 
     if (products.length === 0) {

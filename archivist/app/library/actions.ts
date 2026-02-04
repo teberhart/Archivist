@@ -10,6 +10,7 @@ import {
   isValidProductType,
   isValidProductYear,
 } from "@/app/library/productValidation";
+import { isValidArtistName } from "@/app/library/artistValidation";
 import {
   isValidBorrowerName,
   isValidBorrowerNotes,
@@ -200,6 +201,7 @@ export async function createProduct(formData: FormData) {
 
   const rawShelfId = formData.get("shelfId");
   const rawName = formData.get("name");
+  const rawArtist = formData.get("artist");
   const rawType = formData.get("type");
   const rawYear = formData.get("year");
 
@@ -214,6 +216,7 @@ export async function createProduct(formData: FormData) {
 
   const shelfId = rawShelfId.trim();
   const name = rawName.trim();
+  const artist = typeof rawArtist === "string" ? rawArtist.trim() : "";
   const type = rawType.trim();
   const year = Number.parseInt(rawYear, 10);
 
@@ -228,6 +231,10 @@ export async function createProduct(formData: FormData) {
 
   if (!isValidProductName(name) || !isValidProductType(type)) {
     redirect("/library?status=item-invalid");
+  }
+
+  if (artist && !isValidArtistName(artist)) {
+    redirect("/library?status=item-artist-invalid");
   }
 
   if (!isValidProductYear(year)) {
@@ -256,6 +263,7 @@ export async function createProduct(formData: FormData) {
   await prisma.product.create({
     data: {
       name,
+      artist: artist || null,
       type,
       year,
       shelfId: shelf.id,
@@ -276,6 +284,7 @@ export async function updateProduct(formData: FormData) {
 
   const rawProductId = formData.get("productId");
   const rawName = formData.get("name");
+  const rawArtist = formData.get("artist");
   const rawType = formData.get("type");
   const rawYear = formData.get("year");
 
@@ -290,6 +299,7 @@ export async function updateProduct(formData: FormData) {
 
   const productId = rawProductId.trim();
   const name = rawName.trim();
+  const artist = typeof rawArtist === "string" ? rawArtist.trim() : "";
   const type = rawType.trim();
   const year = Number.parseInt(rawYear, 10);
 
@@ -299,6 +309,10 @@ export async function updateProduct(formData: FormData) {
 
   if (!isValidProductName(name) || !isValidProductType(type)) {
     redirect("/library?status=item-edit-invalid");
+  }
+
+  if (artist && !isValidArtistName(artist)) {
+    redirect("/library?status=item-edit-artist-invalid");
   }
 
   if (!isValidProductYear(year)) {
@@ -335,6 +349,7 @@ export async function updateProduct(formData: FormData) {
     where: { id: product.id },
     data: {
       name,
+      artist: artist || null,
       type,
       year,
     },
@@ -483,6 +498,16 @@ export async function lendProduct(formData: FormData) {
 export async function returnProduct(formData: FormData) {
   const session = await auth();
   const userId = session?.user?.id;
+  const rawRedirectTo = formData.get("redirectTo");
+  const redirectTo =
+    typeof rawRedirectTo === "string" && rawRedirectTo.startsWith("/")
+      ? rawRedirectTo
+      : "/library";
+  const buildRedirect = (status: string) => {
+    const url = new URL(redirectTo, "http://localhost");
+    url.searchParams.set("status", status);
+    return `${url.pathname}?${url.searchParams.toString()}`;
+  };
 
   if (!userId) {
     redirect("/login");
@@ -490,12 +515,12 @@ export async function returnProduct(formData: FormData) {
 
   const rawProductId = formData.get("productId");
   if (typeof rawProductId !== "string") {
-    redirect("/library?status=loan-return-missing");
+    redirect(buildRedirect("loan-return-missing"));
   }
 
   const productId = rawProductId.trim();
   if (!productId) {
-    redirect("/library?status=loan-return-missing");
+    redirect(buildRedirect("loan-return-missing"));
   }
 
   const loan = await prisma.loan.findFirst({
@@ -507,7 +532,7 @@ export async function returnProduct(formData: FormData) {
   });
 
   if (!loan) {
-    redirect("/library?status=loan-return-notfound");
+    redirect(buildRedirect("loan-return-notfound"));
   }
 
   await prisma.loan.update({
@@ -516,7 +541,8 @@ export async function returnProduct(formData: FormData) {
   });
 
   revalidatePath("/library");
-  redirect("/library?status=loan-returned");
+  revalidatePath("/lending");
+  redirect(buildRedirect("loan-returned"));
 }
 
 export type ImportProductsState = {
@@ -652,6 +678,13 @@ export async function importProducts(
     });
 
     for (const productInput of shelfInput.products) {
+      if (productInput.artist && !isValidArtistName(productInput.artist)) {
+        errors.push(
+          `Product "${productInput.name}" on shelf "${shelfInput.name}" has an invalid artist name.`,
+        );
+        continue;
+      }
+
       if (!allowedTypes.has(productInput.type)) {
         errors.push(
           `Product "${productInput.name}" on shelf "${shelfInput.name}" has an unsupported type.`,
@@ -668,6 +701,7 @@ export async function importProducts(
             where: { id: existing.id },
             data: {
               name: productInput.name,
+              artist: productInput.artist ?? null,
               type: productInput.type,
               year: productInput.year,
             },
@@ -683,6 +717,7 @@ export async function importProducts(
           const created = await prisma.product.create({
             data: {
               name: productInput.name,
+              artist: productInput.artist ?? null,
               type: productInput.type,
               year: productInput.year,
               shelfId: shelf.id,

@@ -16,6 +16,11 @@ import {
   getProductYearMax,
 } from "@/app/library/productValidation";
 import {
+  ARTIST_NAME_HELP,
+  ARTIST_NAME_MAX,
+  ARTIST_NAME_MIN,
+} from "@/app/library/artistValidation";
+import {
   BORROWER_NAME_HELP,
   BORROWER_NAME_MAX,
   BORROWER_NAME_MIN,
@@ -56,6 +61,7 @@ type LoanHistoryItem = {
 type ShelfProduct = {
   id: string;
   name: string;
+  artist?: string | null;
   type: string;
   year: number;
   activeLoan?: LoanHistoryItem | null;
@@ -97,6 +103,7 @@ export default function ShelfCard({
   const [name, setName] = useState(shelf.name);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [itemName, setItemName] = useState("");
+  const [itemArtist, setItemArtist] = useState("");
   const [itemType, setItemType] = useState(productTypes[0] ?? "");
   const [itemYear, setItemYear] = useState(
     String(getProductYearMax() - 1),
@@ -105,6 +112,7 @@ export default function ShelfCard({
     null,
   );
   const [editName, setEditName] = useState("");
+  const [editArtist, setEditArtist] = useState("");
   const [editType, setEditType] = useState(productTypes[0] ?? "");
   const [editYear, setEditYear] = useState(String(getProductYearMax() - 1));
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
@@ -115,10 +123,12 @@ export default function ShelfCard({
   const inputId = `${formId}-name`;
   const itemFormId = `add-item-${shelf.id}`;
   const itemNameId = `${itemFormId}-name`;
+  const itemArtistId = `${itemFormId}-artist`;
   const itemTypeId = `${itemFormId}-type`;
   const itemYearId = `${itemFormId}-year`;
   const editFormId = `edit-item-${shelf.id}`;
   const editNameId = `${editFormId}-name`;
+  const editArtistId = `${editFormId}-artist`;
   const editTypeId = `${editFormId}-type`;
   const editYearId = `${editFormId}-year`;
   const deleteFormId = `${editFormId}-delete`;
@@ -139,6 +149,7 @@ export default function ShelfCard({
 
   const startAddingItem = () => {
     setItemName("");
+    setItemArtist("");
     setItemType(productTypes[0] ?? "");
     setItemYear(String(getProductYearMax() - 1));
     setEditingProduct(null);
@@ -153,6 +164,7 @@ export default function ShelfCard({
   const startEditingItem = (product: ShelfProduct) => {
     setEditingProduct(product);
     setEditName(product.name);
+    setEditArtist(product.artist ?? "");
     setEditType(product.type);
     setEditYear(String(product.year));
     setBorrowerName(product.activeLoan?.borrowerName ?? "");
@@ -196,12 +208,14 @@ export default function ShelfCard({
       setBorrowerName("");
       setBorrowerNotes("");
       setDueDate("");
+      setEditArtist("");
       return;
     }
 
     setBorrowerName(editingProduct.activeLoan?.borrowerName ?? "");
     setBorrowerNotes(editingProduct.activeLoan?.borrowerNotes ?? "");
     setDueDate(formatInputDate(editingProduct.activeLoan?.dueAt));
+    setEditArtist(editingProduct.artist ?? "");
   }, [editingProduct]);
 
   const hasTypeOptions = productTypes.length > 0;
@@ -336,6 +350,20 @@ export default function ShelfCard({
                 autoFocus
               />
             </label>
+            <label className="text-xs text-muted" htmlFor={itemArtistId}>
+              Artist
+              <input
+                id={itemArtistId}
+                name="artist"
+                type="text"
+                minLength={ARTIST_NAME_MIN}
+                maxLength={ARTIST_NAME_MAX}
+                title={ARTIST_NAME_HELP}
+                value={itemArtist}
+                onChange={(event) => setItemArtist(event.target.value)}
+                className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+              />
+            </label>
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="text-xs text-muted sm:col-span-2" htmlFor={itemTypeId}>
                 Type
@@ -374,8 +402,8 @@ export default function ShelfCard({
               </label>
             </div>
             <p className="text-xs text-muted">
-              {PRODUCT_NAME_HELP} Year must be between {PRODUCT_YEAR_MIN} and{" "}
-              {getProductYearMax()}.
+              {PRODUCT_NAME_HELP} {ARTIST_NAME_HELP} Year must be between{" "}
+              {PRODUCT_YEAR_MIN} and {getProductYearMax()}.
             </p>
             {!hasTypeOptions ? (
               <p className="text-xs text-amber-700">
@@ -413,6 +441,7 @@ export default function ShelfCard({
                     </p>
                     <p className="mt-1 text-xs uppercase tracking-[0.2em] text-muted">
                       {product.type}
+                      {product.artist ? ` · ${product.artist}` : ""}
                     </p>
                     <p className="mt-2 text-xs text-muted">
                       Released {product.year}
@@ -508,6 +537,20 @@ export default function ShelfCard({
                         autoFocus
                       />
                     </label>
+                    <label className="text-xs text-muted" htmlFor={editArtistId}>
+                      Artist
+                      <input
+                        id={editArtistId}
+                        name="artist"
+                        type="text"
+                        minLength={ARTIST_NAME_MIN}
+                        maxLength={ARTIST_NAME_MAX}
+                        title={ARTIST_NAME_HELP}
+                        value={editArtist}
+                        onChange={(event) => setEditArtist(event.target.value)}
+                        className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+                      />
+                    </label>
                     <div className="grid gap-3 sm:grid-cols-3">
                       <label
                         className="text-xs text-muted sm:col-span-2"
@@ -547,7 +590,7 @@ export default function ShelfCard({
                       </label>
                     </div>
                     <p className="text-xs text-muted">
-                      {PRODUCT_NAME_HELP} Year must be between{" "}
+                      {PRODUCT_NAME_HELP} {ARTIST_NAME_HELP} Year must be between{" "}
                       {PRODUCT_YEAR_MIN} and {getProductYearMax()}.
                     </p>
                     <div className="rounded-2xl border border-line bg-wash p-4">

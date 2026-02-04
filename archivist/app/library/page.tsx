@@ -29,6 +29,8 @@ const statusMessages: Record<string, string> = {
   "item-missing": "Please complete all item fields.",
   "item-invalid":
     "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-artist-invalid":
+    "Artist name contains invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
   "item-type-invalid": "Item type must be one of the allowed media types.",
   "item-year": "Please enter a valid year.",
   "item-shelf": "Unable to find that shelf.",
@@ -36,6 +38,8 @@ const statusMessages: Record<string, string> = {
   "item-edit-missing": "Please complete all item fields.",
   "item-edit-invalid":
     "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-edit-artist-invalid":
+    "Artist name contains invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
   "item-edit-type-invalid":
     "Item type must be one of the allowed media types.",
   "item-edit-year": "Please enter a valid year.",
@@ -149,6 +153,12 @@ export default async function LibraryPage({
               href="/settings"
             >
               Settings
+            </Link>
+            <Link
+              className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+              href="/lending"
+            >
+              Lending
             </Link>
             <ImportProductsModal
               buttonClassName="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"

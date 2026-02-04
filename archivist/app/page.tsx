@@ -19,6 +19,7 @@ export default async function Home({
   const libraryItems: {
     id: string;
     name: string;
+    artist?: string | null;
     type: string;
     year: number;
     shelf: { name: string };
@@ -34,6 +35,7 @@ export default async function Home({
         select: {
           id: true,
           name: true,
+          artist: true,
           type: true,
           year: true,
           shelf: {
@@ -126,9 +128,11 @@ export default async function Home({
                 Admin
               </Link>
             ) : null}
-            <a className="hover:text-ink" href="#">
-              Lending
-            </a>
+            {isLoggedIn ? (
+              <Link className="hover:text-ink" href="/lending">
+                Lending
+              </Link>
+            ) : null}
             <a className="hover:text-ink" href="#">
               Notes
             </a>
@@ -346,7 +350,9 @@ export default async function Home({
                               {item.name}
                             </p>
                             <p className="text-sm text-muted">
-                              {item.type} · {item.year}
+                              {item.type}
+                              {item.artist ? ` · ${item.artist}` : ""} ·{" "}
+                              {item.year}
                             </p>
                           </div>
                           <span className="rounded-full bg-card px-3 py-1 text-xs text-muted">

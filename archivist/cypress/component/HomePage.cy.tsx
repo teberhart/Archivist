@@ -37,14 +37,16 @@ describe("HomePage", () => {
       {
         id: "item-1",
         name: "Blade Runner",
-        type: "VHS",
+        artist: "Ridley Scott",
+        type: "Tape",
         year: 1982,
         shelf: { name: "Living Room" },
       },
       {
         id: "item-2",
         name: "Heat",
-        type: "Blu-ray",
+        artist: "Michael Mann",
+        type: "DVD",
         year: 1995,
         shelf: { name: "Office" },
       },
@@ -58,6 +60,7 @@ describe("HomePage", () => {
     cy.contains("Welcome back to your shelf.").should("be.visible");
     cy.contains("Sign out").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
+    cy.contains("Ridley Scott").should("be.visible");
     cy.contains("Living Room").should("be.visible");
     cy.contains("items tracked").prev().should("have.text", "4");
     cy.contains("Added this week").should("be.visible");

@@ -1,21 +1,6 @@
 {
-  "Import Shelf": [
-    {
-      "Name": "La Haine",
-      "Year": 1995,
-      "Type": "DVD"
-    },
-    {
-      "Name": "Amelie",
-      "Year": 2001,
-      "Type": "DVD"
-    }
-  ],
   "Living Room": [
-    {
-      "Name": "Blade Runner",
-      "Year": 1982,
-      "Type": "Tape"
-    }
+    { "Name": "Chicken Run", "Artist": "Peter Lord", "Type": "DVD", "Year": 2003 },
+    { "Name": "Heat", "Artist": "Michael Mann", "Type": "DVD", "Year": 1995 }
   ]
 }

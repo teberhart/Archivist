@@ -64,12 +64,14 @@ describe("Library flow", () => {
       .within(() => {
         cy.contains("button", "Add item").click();
         cy.get("input[name='name']").type(itemName);
+        cy.get("input[name='artist']").type("Wachowski");
         cy.get("select[name='type']").select("DVD");
         cy.get("input[name='year']").clear().type("1999");
         cy.contains("button", "Save item").click();
       });
 
     cy.contains(itemName).should("be.visible");
+    cy.contains("Wachowski").should("be.visible");
   });
 
   it("edits an item in a modal and closes with Escape", () => {
@@ -95,10 +97,12 @@ describe("Library flow", () => {
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type(newName);
+    cy.get("input[name='artist']").clear().type("Ridley Scott");
     cy.get("select[name='type']").select("DVD");
     cy.get("input[name='name']").closest("form").submit();
     cy.contains("Item updated.").should("be.visible");
     cy.contains(newName, { timeout: 10000 }).should("be.visible");
+    cy.contains("Ridley Scott").should("be.visible");
   });
 
   it("lends and returns an item", () => {
@@ -150,9 +154,10 @@ describe("Library flow", () => {
       cy.contains("Import completed").should("be.visible");
     });
 
-    cy.contains("Import Shelf").should("be.visible");
-    cy.contains("La Haine").should("be.visible");
+    cy.contains("Chicken Run").should("be.visible");
+    cy.contains("Heat").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
-    cy.contains("Tape").should("be.visible");
+    cy.contains("Peter Lord").should("be.visible");
+    cy.contains("Michael Mann").should("be.visible");
   });
 });

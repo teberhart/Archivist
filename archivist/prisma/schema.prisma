@@ -43,6 +43,7 @@ model Shelf {
 model Product {
   id        String   @id @default(cuid())
   name      String
+  artist    String?
   type      String
   year      Int
   shelfId   String

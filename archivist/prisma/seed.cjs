@@ -35,8 +35,18 @@ async function main() {
                   name: "Living Room",
                   products: {
                     create: [
-                      { name: "Blade Runner", type: "Tape", year: 1982 },
-                      { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                      {
+                        name: "Blade Runner",
+                        artist: "Ridley Scott",
+                        type: "Tape",
+                        year: 1982,
+                      },
+                      {
+                        name: "Kind of Blue",
+                        artist: "Miles Davis",
+                        type: "Vinyl",
+                        year: 1959,
+                      },
                     ],
                   },
                 },
@@ -44,8 +54,18 @@ async function main() {
                   name: "Studio Shelf",
                   products: {
                     create: [
-                      { name: "In Rainbows", type: "CD", year: 2007 },
-                      { name: "The Matrix", type: "DVD", year: 1999 },
+                      {
+                        name: "In Rainbows",
+                        artist: "Radiohead",
+                        type: "CD",
+                        year: 2007,
+                      },
+                      {
+                        name: "The Matrix",
+                        artist: "The Wachowskis",
+                        type: "DVD",
+                        year: 1999,
+                      },
                     ],
                   },
                 },
@@ -61,8 +81,18 @@ async function main() {
                   name: "Living Room",
                   products: {
                     create: [
-                      { name: "Blade Runner", type: "Tape", year: 1982 },
-                      { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                      {
+                        name: "Blade Runner",
+                        artist: "Ridley Scott",
+                        type: "Tape",
+                        year: 1982,
+                      },
+                      {
+                        name: "Kind of Blue",
+                        artist: "Miles Davis",
+                        type: "Vinyl",
+                        year: 1959,
+                      },
                     ],
                   },
                 },
@@ -70,8 +100,18 @@ async function main() {
                   name: "Studio Shelf",
                   products: {
                     create: [
-                      { name: "In Rainbows", type: "CD", year: 2007 },
-                      { name: "The Matrix", type: "DVD", year: 1999 },
+                      {
+                        name: "In Rainbows",
+                        artist: "Radiohead",
+                        type: "CD",
+                        year: 2007,
+                      },
+                      {
+                        name: "The Matrix",
+                        artist: "The Wachowskis",
+                        type: "DVD",
+                        year: 1999,
+                      },
                     ],
                   },
                 },
@@ -95,8 +135,18 @@ async function main() {
                 name: "Living Room",
                 products: {
                   create: [
-                    { name: "Blade Runner", type: "VHS", year: 1982 },
-                    { name: "Kind of Blue", type: "Vinyl", year: 1959 },
+                    {
+                      name: "Blade Runner",
+                      artist: "Ridley Scott",
+                      type: "Tape",
+                      year: 1982,
+                    },
+                    {
+                      name: "Kind of Blue",
+                      artist: "Miles Davis",
+                      type: "Vinyl",
+                      year: 1959,
+                    },
                   ],
                 },
               },
@@ -104,8 +154,18 @@ async function main() {
                 name: "Studio Shelf",
                 products: {
                   create: [
-                    { name: "In Rainbows", type: "CD", year: 2007 },
-                    { name: "The Matrix", type: "Blu-ray", year: 1999 },
+                    {
+                      name: "In Rainbows",
+                      artist: "Radiohead",
+                      type: "CD",
+                      year: 2007,
+                    },
+                    {
+                      name: "The Matrix",
+                      artist: "The Wachowskis",
+                      type: "DVD",
+                      year: 1999,
+                    },
                   ],
                 },
               },

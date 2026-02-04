@@ -2,11 +2,13 @@
   "Example shelf": [
     {
       "Name": "Bienvenida",
+      "Artist": "Kiko Veneno",
       "Year": 2001,
       "Type": "CD"
     },
     {
       "Name": "Wages of Sin",
+      "Artist": "Arch Enemy",
       "Year": 2002,
       "Type": "CD"
     }
