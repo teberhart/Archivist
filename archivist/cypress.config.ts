@@ -37,9 +37,78 @@ export default defineConfig({
       viteConfig: {
         plugins: [react()],
         resolve: {
-          alias: {
-            "@": path.resolve(__dirname),
-          },
+          alias: [
+            {
+              find: "@/auth",
+              replacement: path.resolve(__dirname, "cypress/mocks/auth.ts"),
+            },
+            {
+              find: "@/lib/prisma",
+              replacement: path.resolve(__dirname, "cypress/mocks/prisma.ts"),
+            },
+            {
+              find: "@/app/library/actions",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/library-actions.ts",
+              ),
+            },
+            {
+              find: "next/link",
+              replacement: path.resolve(__dirname, "cypress/mocks/next-link.tsx"),
+            },
+            {
+              find: "next/image",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/next-image.tsx",
+              ),
+            },
+            {
+              find: "next/navigation",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/next-navigation.ts",
+              ),
+            },
+            {
+              find: "next/font/google",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/next-font-google.ts",
+              ),
+            },
+            {
+              find: "next-auth",
+              replacement: path.resolve(__dirname, "cypress/mocks/next-auth.ts"),
+            },
+            {
+              find: "next-auth/providers/credentials",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/next-auth-credentials.ts",
+              ),
+            },
+            {
+              find: "@auth/prisma-adapter",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/prisma-adapter.ts",
+              ),
+            },
+            {
+              find: "@prisma/client",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/prisma-client.ts",
+              ),
+            },
+            {
+              find: "bcrypt",
+              replacement: path.resolve(__dirname, "cypress/mocks/bcrypt.ts"),
+            },
+            { find: "@", replacement: path.resolve(__dirname) },
+          ],
         },
       },
     },
