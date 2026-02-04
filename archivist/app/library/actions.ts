@@ -14,6 +14,7 @@ import {
   parseImportText,
   type ImportParseResult,
 } from "@/app/library/importParser";
+import { getProductTypesSet } from "@/app/library/productTypes";
 
 export async function createShelf(formData: FormData) {
   const session = await auth();
@@ -216,6 +217,11 @@ export async function createProduct(formData: FormData) {
     redirect("/library?status=item-missing");
   }
 
+  const allowedTypes = await getProductTypesSet();
+  if (!allowedTypes.has(type)) {
+    redirect("/library?status=item-type-invalid");
+  }
+
   if (!isValidProductName(name) || !isValidProductType(type)) {
     redirect("/library?status=item-invalid");
   }
@@ -316,6 +322,11 @@ export async function updateProduct(formData: FormData) {
     redirect("/library?status=item-edit-notfound");
   }
 
+  const allowedTypes = await getProductTypesSet();
+  if (!allowedTypes.has(type) && type !== product.type) {
+    redirect("/library?status=item-edit-type-invalid");
+  }
+
   await prisma.product.update({
     where: { id: product.id },
     data: {
@@ -327,6 +338,47 @@ export async function updateProduct(formData: FormData) {
 
   revalidatePath("/library");
   redirect("/library?status=item-updated");
+}
+
+export async function deleteProduct(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const rawProductId = formData.get("productId");
+  if (typeof rawProductId !== "string") {
+    redirect("/library?status=item-delete-missing");
+  }
+
+  const productId = rawProductId.trim();
+  if (!productId) {
+    redirect("/library?status=item-delete-missing");
+  }
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shelf: {
+        library: {
+          userId,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    redirect("/library?status=item-delete-notfound");
+  }
+
+  await prisma.product.delete({
+    where: { id: product.id },
+  });
+
+  revalidatePath("/library");
+  redirect("/library?status=item-deleted");
 }
 
 export type ImportProductsState = {
@@ -390,6 +442,8 @@ export async function importProducts(
       parsed.errors,
     );
   }
+
+  const allowedTypes = await getProductTypesSet();
 
   const library = await prisma.library.findUnique({
     where: { userId },
@@ -460,6 +514,13 @@ export async function importProducts(
     });
 
     for (const productInput of shelfInput.products) {
+      if (!allowedTypes.has(productInput.type)) {
+        errors.push(
+          `Product "${productInput.name}" on shelf "${shelfInput.name}" has an unsupported type.`,
+        );
+        continue;
+      }
+
       const normalizedProduct = productInput.name.toLowerCase();
       const existing = productMap.get(normalizedProduct);
 

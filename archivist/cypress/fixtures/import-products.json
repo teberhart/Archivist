@@ -8,14 +8,14 @@
     {
       "Name": "Amelie",
       "Year": 2001,
-      "Type": "Blu-ray"
+      "Type": "DVD"
     }
   ],
   "Living Room": [
     {
       "Name": "Blade Runner",
       "Year": 1982,
-      "Type": "4K"
+      "Type": "Tape"
     }
   ]
 }

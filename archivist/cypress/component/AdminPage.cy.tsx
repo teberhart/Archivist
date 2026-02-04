@@ -1,7 +1,11 @@
 import type { ReactElement } from "react";
 import AdminPage from "../../app/admin/page";
 import { __setSession } from "../mocks/auth";
-import { __setUserList, __setUserResult } from "../mocks/prisma";
+import {
+  __setProductTypeList,
+  __setUserList,
+  __setUserResult,
+} from "../mocks/prisma";
 
 const mountAsync = (element: Promise<ReactElement>) => {
   cy.wrap(element).then((resolved) => {
@@ -15,6 +19,10 @@ describe("AdminPage", () => {
       user: { id: "admin-1", email: "thibaut.eberhart@gmail.com" },
     });
     __setUserResult({ status: "ADMIN" });
+    __setProductTypeList([
+      { id: "type-1", name: "Tape" },
+      { id: "type-2", name: "DVD" },
+    ]);
     __setUserList([
       {
         id: "user-1",
@@ -63,5 +71,14 @@ describe("AdminPage", () => {
     cy.contains("Blade Runner").should("be.visible");
     cy.contains("Make VIP").should("be.visible");
     cy.contains("Delete user").should("be.visible");
+  });
+
+  it("renders the product types tab", () => {
+    mountAsync(AdminPage({ searchParams: Promise.resolve({ tab: "types" }) }));
+
+    cy.contains("Media type options").should("be.visible");
+    cy.contains("Tape").should("be.visible");
+    cy.contains("DVD").should("be.visible");
+    cy.contains("Add type").should("be.visible");
   });
 });

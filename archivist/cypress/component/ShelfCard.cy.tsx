@@ -9,6 +9,7 @@ const shelf = {
 };
 
 describe("ShelfCard", () => {
+  const productTypes = ["Tape", "CD", "DVD", "Vinyl"];
   it("allows editing a shelf name", () => {
     const updateShelf = cy.stub().resolves();
     cy.wrap(updateShelf).as("updateShelf");
@@ -17,9 +18,11 @@ describe("ShelfCard", () => {
       <ShelfCard
         shelf={shelf}
         index={0}
+        productTypes={productTypes}
         updateShelf={updateShelf}
         createProduct={cy.stub().resolves()}
         updateProduct={cy.stub().resolves()}
+        deleteProduct={cy.stub().resolves()}
         deleteShelf={cy.stub().resolves()}
       />,
     );
@@ -41,16 +44,18 @@ describe("ShelfCard", () => {
       <ShelfCard
         shelf={shelf}
         index={0}
+        productTypes={productTypes}
         updateShelf={cy.stub().resolves()}
         createProduct={createProduct}
         updateProduct={cy.stub().resolves()}
+        deleteProduct={cy.stub().resolves()}
         deleteShelf={cy.stub().resolves()}
       />,
     );
 
     cy.contains("button", "Add item").click();
     cy.get("input[name='name']").type("New Item");
-    cy.get("input[name='type']").type("DVD");
+    cy.get("select[name='type']").select("DVD");
     cy.get("input[name='year']").clear().type("2001");
     cy.contains("button", "Save item").click();
     cy.get("@createProduct").should("have.been.called");
@@ -64,9 +69,11 @@ describe("ShelfCard", () => {
       <ShelfCard
         shelf={shelf}
         index={0}
+        productTypes={productTypes}
         updateShelf={cy.stub().resolves()}
         createProduct={cy.stub().resolves()}
         updateProduct={updateProduct}
+        deleteProduct={cy.stub().resolves()}
         deleteShelf={cy.stub().resolves()}
       />,
     );

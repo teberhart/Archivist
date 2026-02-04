@@ -4,6 +4,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import {
   createProduct,
+  deleteProduct,
   deleteShelf,
   updateProduct,
   updateShelf,
@@ -11,6 +12,7 @@ import {
 import ShelfCard from "@/app/library/ShelfCard";
 import ImportProductsModal from "@/app/library/ImportProductsModal";
 import { isAdminUserId } from "@/lib/admin";
+import { getProductTypes } from "@/app/library/productTypes";
 
 const statusMessages: Record<string, string> = {
   created: "Shelf added successfully.",
@@ -18,15 +20,21 @@ const statusMessages: Record<string, string> = {
   "delete-missing": "Unable to delete shelf.",
   updated: "Shelf updated.",
   "item-created": "Item added to shelf.",
+  "item-deleted": "Item deleted.",
+  "item-delete-missing": "Unable to delete that item.",
+  "item-delete-notfound": "Unable to find that item.",
   "item-missing": "Please complete all item fields.",
   "item-invalid":
     "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-type-invalid": "Item type must be one of the allowed media types.",
   "item-year": "Please enter a valid year.",
   "item-shelf": "Unable to find that shelf.",
   "item-updated": "Item updated.",
   "item-edit-missing": "Please complete all item fields.",
   "item-edit-invalid":
     "Item details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "item-edit-type-invalid":
+    "Item type must be one of the allowed media types.",
   "item-edit-year": "Please enter a valid year.",
   "item-edit-notfound": "Unable to find that item.",
   "edit-missing": "Please enter a shelf name.",
@@ -57,12 +65,14 @@ export default async function LibraryPage({
 
   let library = null;
   let errorMessage: string | null = null;
+  let productTypes: string[] = [];
 
   try {
     library = await prisma.library.findUnique({
       where: { userId },
       include: { shelves: { include: { products: true } } },
     });
+    productTypes = await getProductTypes();
   } catch (error) {
     console.error(error);
     errorMessage = "We couldn't load your library. Please try again.";
@@ -169,9 +179,11 @@ export default async function LibraryPage({
                   key={shelf.id}
                   shelf={shelf}
                   index={index}
+                  productTypes={productTypes}
                   updateShelf={updateShelf}
                   createProduct={createProduct}
                   updateProduct={updateProduct}
+                  deleteProduct={deleteProduct}
                   deleteShelf={deleteShelf}
                 />
               ))}

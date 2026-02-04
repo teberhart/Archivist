@@ -25,6 +25,7 @@ let userList: Array<{
     }>;
   } | null;
 }> = [];
+let productTypeList: Array<{ id: string; name: string }> = [];
 
 export function __setLibraryResult(result: any) {
   libraryResult = result;
@@ -87,6 +88,10 @@ export function __setUserList(
   userList = list;
 }
 
+export function __setProductTypeList(list: Array<{ id: string; name: string }>) {
+  productTypeList = list;
+}
+
 export const prisma = {
   library: {
     findUnique: async () => {
@@ -114,6 +119,11 @@ export const prisma = {
   shelf: {
     findFirst: async () => topShelf,
     create: async () => ({}),
+  },
+  productType: {
+    findMany: async () => productTypeList,
+    create: async () => ({}),
+    delete: async () => ({}),
   },
   userSettings: {
     findUnique: async () => userSettingsResult,

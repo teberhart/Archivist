@@ -64,7 +64,7 @@ describe("Library flow", () => {
       .within(() => {
         cy.contains("button", "Add item").click();
         cy.get("input[name='name']").type(itemName);
-        cy.get("input[name='type']").type("VHS");
+        cy.get("select[name='type']").select("DVD");
         cy.get("input[name='year']").clear().type("1999");
         cy.contains("button", "Save item").click();
       });
@@ -95,6 +95,7 @@ describe("Library flow", () => {
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type(newName);
+    cy.get("select[name='type']").select("DVD");
     cy.contains("button", "Save changes").click();
     cy.contains("Item updated.").should("be.visible");
     cy.contains(newName, { timeout: 10000 }).should("be.visible");
@@ -117,6 +118,6 @@ describe("Library flow", () => {
     cy.contains("Import Shelf").should("be.visible");
     cy.contains("La Haine").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
-    cy.contains("4K").should("be.visible");
+    cy.contains("Tape").should("be.visible");
   });
 });

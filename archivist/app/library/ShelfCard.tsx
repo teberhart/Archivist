@@ -12,9 +12,6 @@ import {
   PRODUCT_NAME_HELP,
   PRODUCT_NAME_MAX,
   PRODUCT_NAME_MIN,
-  PRODUCT_TYPE_HELP,
-  PRODUCT_TYPE_MAX,
-  PRODUCT_TYPE_MIN,
   PRODUCT_YEAR_MIN,
   getProductYearMax,
 } from "@/app/library/productValidation";
@@ -35,25 +32,29 @@ type Shelf = {
 type ShelfCardProps = {
   shelf: Shelf;
   index: number;
+  productTypes: string[];
   updateShelf: (formData: FormData) => Promise<void>;
   createProduct: (formData: FormData) => Promise<void>;
   updateProduct: (formData: FormData) => Promise<void>;
+  deleteProduct: (formData: FormData) => Promise<void>;
   deleteShelf: (formData: FormData) => Promise<void>;
 };
 
 export default function ShelfCard({
   shelf,
   index,
+  productTypes,
   updateShelf,
   createProduct,
   updateProduct,
+  deleteProduct,
   deleteShelf,
 }: ShelfCardProps) {
   const [isEditing, setIsEditing] = useState(false);
   const [name, setName] = useState(shelf.name);
   const [isAddingItem, setIsAddingItem] = useState(false);
   const [itemName, setItemName] = useState("");
-  const [itemType, setItemType] = useState("");
+  const [itemType, setItemType] = useState(productTypes[0] ?? "");
   const [itemYear, setItemYear] = useState(
     String(getProductYearMax() - 1),
   );
@@ -61,7 +62,7 @@ export default function ShelfCard({
     null,
   );
   const [editName, setEditName] = useState("");
-  const [editType, setEditType] = useState("");
+  const [editType, setEditType] = useState(productTypes[0] ?? "");
   const [editYear, setEditYear] = useState(String(getProductYearMax() - 1));
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
   const formId = `edit-shelf-${shelf.id}`;
@@ -74,6 +75,7 @@ export default function ShelfCard({
   const editNameId = `${editFormId}-name`;
   const editTypeId = `${editFormId}-type`;
   const editYearId = `${editFormId}-year`;
+  const deleteFormId = `${editFormId}-delete`;
 
   const startEditing = () => {
     setName(shelf.name);
@@ -89,7 +91,7 @@ export default function ShelfCard({
 
   const startAddingItem = () => {
     setItemName("");
-    setItemType("");
+    setItemType(productTypes[0] ?? "");
     setItemYear(String(getProductYearMax() - 1));
     setEditingProduct(null);
     setIsEditing(false);
@@ -137,6 +139,13 @@ export default function ShelfCard({
       document.body.style.overflow = previousOverflow;
     };
   }, [editingProduct]);
+
+  const hasTypeOptions = productTypes.length > 0;
+  const editTypeOptions = editingProduct
+    ? productTypes.includes(editingProduct.type)
+      ? productTypes
+      : [editingProduct.type, ...productTypes]
+    : productTypes;
 
   return (
     <section
@@ -219,6 +228,7 @@ export default function ShelfCard({
                 className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
                 type="submit"
                 form={itemFormId}
+                disabled={!hasTypeOptions}
               >
                 Save item
               </button>
@@ -265,18 +275,24 @@ export default function ShelfCard({
             <div className="grid gap-3 sm:grid-cols-3">
               <label className="text-xs text-muted sm:col-span-2" htmlFor={itemTypeId}>
                 Type
-                <input
+                <select
                   id={itemTypeId}
                   name="type"
-                  type="text"
                   required
-                  minLength={PRODUCT_TYPE_MIN}
-                  maxLength={PRODUCT_TYPE_MAX}
-                  title={PRODUCT_TYPE_HELP}
                   value={itemType}
                   onChange={(event) => setItemType(event.target.value)}
                   className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
-                />
+                  disabled={!hasTypeOptions}
+                >
+                  {hasTypeOptions ? null : (
+                    <option value="">No types available</option>
+                  )}
+                  {productTypes.map((type) => (
+                    <option key={type} value={type}>
+                      {type}
+                    </option>
+                  ))}
+                </select>
               </label>
               <label className="text-xs text-muted" htmlFor={itemYearId}>
                 Year
@@ -297,6 +313,11 @@ export default function ShelfCard({
               {PRODUCT_NAME_HELP} Year must be between {PRODUCT_YEAR_MIN} and{" "}
               {getProductYearMax()}.
             </p>
+            {!hasTypeOptions ? (
+              <p className="text-xs text-amber-700">
+                Add at least one product type in the Admin page to save items.
+              </p>
+            ) : null}
           </form>
         ) : null}
 
@@ -406,18 +427,22 @@ export default function ShelfCard({
                         htmlFor={editTypeId}
                       >
                         Type
-                        <input
+                        <select
                           id={editTypeId}
                           name="type"
-                          type="text"
                           required
-                          minLength={PRODUCT_TYPE_MIN}
-                          maxLength={PRODUCT_TYPE_MAX}
-                          title={PRODUCT_TYPE_HELP}
                           value={editType}
                           onChange={(event) => setEditType(event.target.value)}
                           className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
-                        />
+                        >
+                          {editTypeOptions.map((type) => (
+                            <option key={type} value={type}>
+                              {productTypes.includes(type)
+                                ? type
+                                : `Legacy: ${type}`}
+                            </option>
+                          ))}
+                        </select>
                       </label>
                       <label className="text-xs text-muted" htmlFor={editYearId}>
                         Year
@@ -438,22 +463,39 @@ export default function ShelfCard({
                       {PRODUCT_NAME_HELP} Year must be between{" "}
                       {PRODUCT_YEAR_MIN} and {getProductYearMax()}.
                     </p>
-                    <div className="flex flex-wrap justify-end gap-2">
+                    <div className="flex flex-wrap items-center gap-2">
                       <button
-                        className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink"
-                        type="button"
-                        onClick={cancelEditingItem}
-                      >
-                        Cancel
-                      </button>
-                      <button
-                        className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                        className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300"
                         type="submit"
-                        form={editFormId}
+                        form={deleteFormId}
+                        data-cy="product-delete-button"
                       >
-                        Save changes
+                        Delete item
                       </button>
+                      <div className="ml-auto flex flex-wrap gap-2">
+                        <button
+                          className="rounded-full border border-line px-4 py-2 text-sm text-ink transition hover:border-ink"
+                          type="button"
+                          onClick={cancelEditingItem}
+                        >
+                          Cancel
+                        </button>
+                        <button
+                          className="rounded-full bg-accent px-4 py-2 text-sm font-semibold text-ink shadow-sm transition hover:bg-accent-strong"
+                          type="submit"
+                          form={editFormId}
+                        >
+                          Save changes
+                        </button>
+                      </div>
                     </div>
+                  </form>
+                  <form id={deleteFormId} action={deleteProduct}>
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={editingProduct.id}
+                    />
                   </form>
                 </div>
               </div>,

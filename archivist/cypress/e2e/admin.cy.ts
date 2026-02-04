@@ -95,4 +95,41 @@ describe("Admin access", () => {
     cy.visit("/admin");
     cy.location("pathname").should("eq", "/");
   });
+
+  it("manages product types and uses them in products", () => {
+    const typeName = `LaserDisc ${Date.now()}`;
+    const itemName = `LaserDisc Item ${Date.now()}`;
+
+    cy.login("thibaut.eberhart@gmail.com", "123456");
+    cy.visit("/admin?tab=types");
+
+    cy.get("input[name='name']").type(typeName);
+    cy.contains("button", "Add type").click();
+    cy.contains("Product type added.").should("be.visible");
+    cy.contains(typeName).should("be.visible");
+
+    cy.visit("/library");
+    cy.contains("h2", "Living Room")
+      .closest("section")
+      .within(() => {
+        cy.contains("button", "Add item").click();
+        cy.get("input[name='name']").type(itemName);
+        cy.get("select[name='type']").select(typeName);
+        cy.get("input[name='year']").clear().type("1994");
+        cy.contains("button", "Save item").click();
+      });
+
+    cy.contains(itemName).should("be.visible");
+
+    cy.visit("/admin?tab=types");
+    cy.on("window:confirm", () => true);
+    cy.contains(typeName)
+      .closest("li")
+      .within(() => {
+        cy.contains("Remove").click();
+      });
+
+    cy.contains("That product type is in use").should("be.visible");
+    cy.contains(typeName).should("be.visible");
+  });
 });

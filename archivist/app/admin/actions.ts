@@ -6,6 +6,7 @@ import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import { isAdminUserId } from "@/lib/admin";
 import type { UserStatus } from "@prisma/client";
+import { isValidProductType } from "@/app/library/productValidation";
 
 async function requireAdmin() {
   const session = await auth();
@@ -81,4 +82,58 @@ export async function deleteUser(formData: FormData) {
 
   revalidatePath("/admin");
   redirect("/admin?message=user-deleted");
+}
+
+export async function addProductType(formData: FormData) {
+  await requireAdmin();
+  const rawName = formData.get("name");
+
+  if (typeof rawName !== "string") {
+    redirect("/admin?tab=types&message=invalid-type");
+  }
+
+  const name = rawName.trim();
+  if (!name || !isValidProductType(name)) {
+    redirect("/admin?tab=types&message=invalid-type");
+  }
+
+  try {
+    await prisma.productType.create({ data: { name } });
+  } catch (error) {
+    redirect("/admin?tab=types&message=type-exists");
+  }
+
+  revalidatePath("/admin");
+  redirect("/admin?tab=types&message=type-added");
+}
+
+export async function removeProductType(formData: FormData) {
+  await requireAdmin();
+  const rawId = formData.get("typeId");
+
+  if (typeof rawId !== "string") {
+    redirect("/admin?tab=types&message=invalid-type");
+  }
+
+  const type = await prisma.productType.findUnique({
+    where: { id: rawId },
+    select: { name: true },
+  });
+
+  if (!type) {
+    redirect("/admin?tab=types&message=invalid-type");
+  }
+
+  const inUse = await prisma.product.count({
+    where: { type: type.name },
+  });
+
+  if (inUse > 0) {
+    redirect("/admin?tab=types&message=type-in-use");
+  }
+
+  await prisma.productType.delete({ where: { id: rawId } });
+
+  revalidatePath("/admin");
+  redirect("/admin?tab=types&message=type-removed");
 }

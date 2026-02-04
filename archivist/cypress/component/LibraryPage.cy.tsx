@@ -4,6 +4,7 @@ import { __setSession } from "../mocks/auth";
 import {
   __setLibraryError,
   __setLibraryResult,
+  __setProductTypeList,
   __setUserResult,
 } from "../mocks/prisma";
 
@@ -17,6 +18,10 @@ describe("LibraryPage", () => {
   beforeEach(() => {
     __setSession({ user: { id: "user-1" } });
     __setUserResult({ status: "STANDARD" });
+    __setProductTypeList(["Tape", "CD", "DVD", "Vinyl"].map((name, index) => ({
+      id: `type-${index}`,
+      name,
+    })));
     __setLibraryError(null);
   });
 
