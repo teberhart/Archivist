@@ -4,7 +4,7 @@ import { __setSession } from "../mocks/auth";
 
 const mountAsync = (element: Promise<ReactElement>) => {
   cy.wrap(element).then((resolved) => {
-    cy.mount(resolved);
+    cy.mount(resolved as ReactElement);
   });
 };
 
