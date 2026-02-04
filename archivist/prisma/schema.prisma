@@ -15,6 +15,7 @@ model User {
   image         String?
   password      String?
   library       Library?
+  settings      UserSettings?
   accounts      Account[]
   sessions      Session[]
 }
@@ -79,4 +80,13 @@ model VerificationToken {
   expires    DateTime
 
   @@unique([identifier, token])
+}
+
+model UserSettings {
+  id             String   @id @default(cuid())
+  userId         String   @unique
+  user           User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  showShelfPulse Boolean  @default(true)
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
 }

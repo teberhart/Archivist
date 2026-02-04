@@ -64,6 +64,7 @@ export default async function Home({
   const shelfPulseIsSample = shelfPulse.status === "logged-out";
   const shelfPulseIsEmpty = shelfPulse.status === "empty";
   const shelfPulseIsError = shelfPulse.status === "error";
+  const shelfPulseIsDisabled = shelfPulse.status === "disabled";
   const shelfPulseMetrics = shelfPulseIsSample
     ? {
         totalItems: 128,
@@ -134,7 +135,7 @@ export default async function Home({
               <>
                 <Link
                   className="hidden rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink md:inline-flex"
-                  href="#"
+                  href="/settings"
                 >
                   Settings
                 </Link>
@@ -247,6 +248,14 @@ export default async function Home({
                 {shelfPulseIsError ? (
                   <div className="rounded-2xl bg-wash p-4 text-sm text-muted">
                     We couldn't load your shelf pulse right now.
+                  </div>
+                ) : shelfPulseIsDisabled ? (
+                  <div className="rounded-2xl bg-wash p-4 text-sm text-muted">
+                    Shelf pulse is hidden.{" "}
+                    <Link className="text-ink underline" href="/settings">
+                      Enable it in settings
+                    </Link>
+                    .
                   </div>
                 ) : (
                   <>

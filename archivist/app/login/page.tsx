@@ -85,11 +85,39 @@ export default async function LoginPage({
                   return;
                 }
 
-                await signIn("credentials", {
-                  email,
-                  password,
-                  redirectTo: "/",
-                });
+                try {
+                  await signIn("credentials", {
+                    email,
+                    password,
+                    redirectTo: "/",
+                  });
+                } catch (error) {
+                  const message =
+                    error instanceof Error ? error.message : "";
+                  const messageLower = message.toLowerCase();
+                  const errorType =
+                    error && typeof error === "object"
+                      ? typeof (error as { type?: unknown }).type === "string"
+                        ? (error as { type: string }).type
+                        : typeof (error as { name?: unknown }).name === "string"
+                          ? (error as { name: string }).name
+                          : ""
+                      : "";
+
+                  if (
+                    errorType === "CredentialsSignin" ||
+                    messageLower.includes("credentialssignin")
+                  ) {
+                    redirect("/login?error=CredentialsSignin");
+                  }
+                  if (
+                    errorType === "AccessDenied" ||
+                    messageLower.includes("accessdenied")
+                  ) {
+                    redirect("/login?error=AccessDenied");
+                  }
+                  throw error;
+                }
               }}
             >
               <label className="block text-sm text-muted" htmlFor="email">

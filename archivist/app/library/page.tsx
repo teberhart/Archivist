@@ -98,6 +98,12 @@ export default async function LibraryPage({
             >
               Back to home
             </Link>
+            <Link
+              className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+              href="/settings"
+            >
+              Settings
+            </Link>
             <ImportProductsModal
               buttonClassName="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
               initialOpen={importOpen}

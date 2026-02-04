@@ -4,6 +4,9 @@ let productResults: any[] = [];
 let productCount = 0;
 let weeklyProductCount = 0;
 let topShelf: { name: string; _count: { products: number } } | null = null;
+let userResult: { name?: string | null; email?: string | null; password?: string | null } | null =
+  null;
+let userSettingsResult: { showShelfPulse: boolean } | null = null;
 
 export function __setLibraryResult(result: any) {
   libraryResult = result;
@@ -32,6 +35,16 @@ export function __setTopShelf(result: { name: string; _count: { products: number
   topShelf = result;
 }
 
+export function __setUserResult(
+  result: { name?: string | null; email?: string | null; password?: string | null } | null,
+) {
+  userResult = result;
+}
+
+export function __setUserSettingsResult(result: { showShelfPulse: boolean } | null) {
+  userSettingsResult = result;
+}
+
 export const prisma = {
   library: {
     findUnique: async () => {
@@ -52,9 +65,15 @@ export const prisma = {
   },
   user: {
     create: async () => ({}),
+    findUnique: async () => userResult,
+    update: async () => userResult,
   },
   shelf: {
     findFirst: async () => topShelf,
     create: async () => ({}),
+  },
+  userSettings: {
+    findUnique: async () => userSettingsResult,
+    upsert: async () => userSettingsResult ?? { showShelfPulse: true },
   },
 };

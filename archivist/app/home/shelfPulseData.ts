@@ -23,6 +23,18 @@ export async function getShelfPulseData(): Promise<ShelfPulseData> {
   }
 
   try {
+    const settings = await prisma.userSettings.findUnique({
+      where: { userId },
+      select: { showShelfPulse: true },
+    });
+
+    if (settings && !settings.showShelfPulse) {
+      return {
+        status: "disabled",
+        ...EMPTY_DATA,
+      };
+    }
+
     const weekStart = new Date(Date.now() - WEEK_IN_MS);
 
     const [totalItems, itemsAddedLast7Days, topShelf] = await Promise.all([

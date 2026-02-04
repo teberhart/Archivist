@@ -1,4 +1,9 @@
-export type ShelfPulseStatus = "logged-out" | "ready" | "empty" | "error";
+export type ShelfPulseStatus =
+  | "logged-out"
+  | "ready"
+  | "empty"
+  | "error"
+  | "disabled";
 
 export type ShelfPulseData = {
   status: ShelfPulseStatus;
