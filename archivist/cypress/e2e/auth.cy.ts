@@ -9,6 +9,8 @@ describe("Auth flow", () => {
     cy.contains("Sign in").should("be.visible");
     cy.contains("Create account").should("be.visible");
     cy.contains("Sign out").should("not.exist");
+    cy.contains("Sample").should("be.visible");
+    cy.contains("Sign in to see your live shelf stats.").should("be.visible");
   });
 
   it("signs up a new user and shows the success banner", () => {

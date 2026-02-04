@@ -3,6 +3,7 @@ import Link from "next/link";
 import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImportProductsModal from "@/app/library/ImportProductsModal";
+import { getShelfPulseData } from "@/app/home/shelfPulseData";
 
 export default async function Home({
   searchParams,
@@ -59,6 +60,21 @@ export default async function Home({
       description: "A light-touch inventory that feels like a personal archive.",
     },
   ];
+  const shelfPulse = await getShelfPulseData();
+  const shelfPulseIsSample = shelfPulse.status === "logged-out";
+  const shelfPulseIsEmpty = shelfPulse.status === "empty";
+  const shelfPulseIsError = shelfPulse.status === "error";
+  const shelfPulseMetrics = shelfPulseIsSample
+    ? {
+        totalItems: 128,
+        mostActiveShelfName: "Living Room",
+        itemsAddedLast7Days: 3,
+      }
+    : {
+        totalItems: shelfPulse.totalItems,
+        mostActiveShelfName: shelfPulse.mostActiveShelfName ?? "No shelves yet",
+        itemsAddedLast7Days: shelfPulse.itemsAddedLast7Days,
+      };
 
   return (
     <div className="relative min-h-screen overflow-hidden text-ink">
@@ -217,26 +233,53 @@ export default async function Home({
             </div>
 
             <div className="rounded-3xl border border-line bg-card p-6 shadow-sm">
-              <p className="text-xs uppercase tracking-[0.3em] text-muted">
-                Shelf pulse
-              </p>
+              <div className="flex items-center justify-between gap-3">
+                <p className="text-xs uppercase tracking-[0.3em] text-muted">
+                  Shelf pulse
+                </p>
+                {shelfPulseIsSample ? (
+                  <span className="rounded-full bg-wash px-3 py-1 text-[11px] uppercase tracking-[0.2em] text-muted">
+                    Sample
+                  </span>
+                ) : null}
+              </div>
               <div className="mt-6 space-y-4">
-                <div>
-                  <p className="text-4xl font-[var(--font-display)]">128</p>
-                  <p className="text-sm text-muted">items tracked</p>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted">Most active shelf</span>
-                  <span className="font-medium text-ink">Living Room</span>
-                </div>
-                <div className="flex items-center justify-between text-sm">
-                  <span className="text-muted">Recently added</span>
-                  <span className="font-medium text-ink">3 this week</span>
-                </div>
-                <div className="rounded-2xl bg-wash p-4 text-sm text-muted">
-                  Keep your lending list tidy and never lose track of a favorite
-                  album again.
-                </div>
+                {shelfPulseIsError ? (
+                  <div className="rounded-2xl bg-wash p-4 text-sm text-muted">
+                    We couldn't load your shelf pulse right now.
+                  </div>
+                ) : (
+                  <>
+                    {shelfPulseIsSample ? (
+                      <p className="text-sm text-muted">
+                        Sign in to see your live shelf stats.
+                      </p>
+                    ) : null}
+                    <div>
+                      <p className="text-4xl font-[var(--font-display)]">
+                        {shelfPulseMetrics.totalItems}
+                      </p>
+                      <p className="text-sm text-muted">items tracked</p>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted">Most active shelf</span>
+                      <span className="font-medium text-ink">
+                        {shelfPulseMetrics.mostActiveShelfName}
+                      </span>
+                    </div>
+                    <div className="flex items-center justify-between text-sm">
+                      <span className="text-muted">Added this week</span>
+                      <span className="font-medium text-ink">
+                        {shelfPulseMetrics.itemsAddedLast7Days} this week
+                      </span>
+                    </div>
+                    <div className="rounded-2xl bg-wash p-4 text-sm text-muted">
+                      {shelfPulseIsEmpty
+                        ? "Add your first shelf to start tracking activity."
+                        : "Keep your lending list tidy and never lose track of a favorite album again."}
+                    </div>
+                  </>
+                )}
               </div>
             </div>
           </header>

@@ -9,6 +9,15 @@ describe("Library flow", () => {
     cy.contains("button", "Import products").should("be.visible");
     cy.contains("Add item").should("not.exist");
     cy.contains("Add new item").should("not.exist");
+    cy.contains("items tracked").prev().should("have.text", "4");
+    cy.contains("Most active shelf")
+      .parent()
+      .contains("Living Room")
+      .should("be.visible");
+    cy.contains("Added this week")
+      .parent()
+      .contains("4 this week")
+      .should("be.visible");
   });
 
   it("logs in, loads the library, and adds a shelf", () => {
