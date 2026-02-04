@@ -18,6 +18,7 @@ async function main() {
     update: {
       name: "Thibaut Eberhart",
       status: "ADMIN",
+      password,
       library: {
         upsert: {
           create: {

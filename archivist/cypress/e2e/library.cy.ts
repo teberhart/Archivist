@@ -96,7 +96,8 @@ describe("Library flow", () => {
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type(newName);
     cy.contains("button", "Save changes").click();
-    cy.contains(newName).should("be.visible");
+    cy.contains("Item updated.").should("be.visible");
+    cy.contains(newName, { timeout: 10000 }).should("be.visible");
   });
 
   it("imports products from JSON", () => {

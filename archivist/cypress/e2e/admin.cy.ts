@@ -15,12 +15,16 @@ describe("Admin access", () => {
   it("redirects non-admin users", () => {
     const timestamp = Date.now();
     const email = `cypress.nonadmin.${timestamp}@example.com`;
+    const password = "strong-pass-123";
 
     cy.visit("/signup");
     cy.get("input[name='name']").type("Non Admin");
     cy.get("input[name='email']").type(email);
-    cy.get("input[name='password']").type("strong-pass-123");
+    cy.get("input[name='password']").type(password);
     cy.contains("button", "Create account").click();
+
+    cy.contains("button", "Sign out").click();
+    cy.login(email, password);
 
     cy.visit("/admin");
     cy.location("pathname").should("eq", "/");

@@ -30,4 +30,20 @@ describe("Settings", () => {
     cy.contains("Shelf pulse is hidden.").should("be.visible");
     cy.contains("Enable it in settings").should("be.visible");
   });
+
+  it("re-enables the shelf pulse", () => {
+    cy.visit("/settings");
+
+    cy.get("input[name='showShelfPulse']").uncheck({ force: true });
+    cy.contains("button", "Save preferences").click();
+    cy.contains("Preferences saved.").should("be.visible");
+
+    cy.get("input[name='showShelfPulse']").check({ force: true });
+    cy.contains("button", "Save preferences").click();
+    cy.contains("Preferences saved.").should("be.visible");
+
+    cy.visit("/");
+    cy.contains("Shelf pulse is hidden.").should("not.exist");
+    cy.contains("items tracked").should("be.visible");
+  });
 });
