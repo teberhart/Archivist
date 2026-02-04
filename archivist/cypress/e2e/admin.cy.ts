@@ -109,6 +109,7 @@ describe("Admin access", () => {
     cy.contains(typeName).should("be.visible");
 
     cy.visit("/library");
+    cy.getShelfItemCount("Living Room").as("productCountBeforeAdd");
     cy.contains("h2", "Living Room")
       .closest("section")
       .within(() => {
@@ -120,6 +121,7 @@ describe("Admin access", () => {
       });
 
     cy.contains(itemName).should("be.visible");
+    cy.getShelfItemCount("Living Room").as("productCountAfterAdd");
 
     cy.visit("/admin?tab=types");
     cy.on("window:confirm", () => true);
@@ -131,5 +133,31 @@ describe("Admin access", () => {
 
     cy.contains("That product type is in use").should("be.visible");
     cy.contains(typeName).should("be.visible");
+
+    cy.visit("/library");
+    cy.contains(itemName)
+      .closest("div.rounded-2xl")
+      .within(() => {
+        cy.get("[data-cy='product-edit-button']").click();
+      });
+
+    cy.get("[data-cy='product-edit-modal']").should("be.visible");
+    cy.get("[data-cy='product-delete-button']").click();
+    cy.contains("Item deleted.").should("be.visible");
+    cy.contains(itemName).should("not.exist");
+    cy.get("@productCountBeforeAdd").then((countBeforeAdd) => {
+      cy.getShelfItemCount("Living Room").should("eq", Number(countBeforeAdd));
+    });
+
+    cy.visit("/admin?tab=types");
+    cy.on("window:confirm", () => true);
+    cy.contains(typeName)
+      .closest("li")
+      .within(() => {
+        cy.contains("Remove").click();
+      });
+
+    cy.contains("Product type removed.").should("be.visible");
+    cy.contains(typeName).should("not.exist");
   });
 });
