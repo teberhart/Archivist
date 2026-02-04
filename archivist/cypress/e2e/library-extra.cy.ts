@@ -58,4 +58,29 @@ describe("Library extras", () => {
       cy.contains("button", "Import products").should("be.disabled");
     });
   });
+
+  it("prevents deleting a lent item", () => {
+    cy.visit("/library");
+
+    const borrowerName = `Alex ${Date.now()}`;
+
+    cy.contains("Blade Runner")
+      .closest("[data-cy='product-card']")
+      .click();
+
+    cy.get("[data-cy='product-edit-modal']").should("be.visible");
+    cy.get("input[name='borrowerName']").type(borrowerName);
+    cy.get("[data-cy='product-lend-button']").click();
+
+    cy.contains("Item lent.").should("be.visible");
+
+    cy.contains(`Lent to ${borrowerName}`)
+      .closest("[data-cy='product-card']")
+      .click();
+
+    cy.get("[data-cy='product-edit-modal']").should("be.visible");
+    cy.get("[data-cy='product-delete-button']").click();
+    cy.contains("Return the item before deleting it.").should("be.visible");
+    cy.contains("Blade Runner").should("be.visible");
+  });
 });

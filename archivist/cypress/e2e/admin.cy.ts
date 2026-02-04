@@ -136,7 +136,7 @@ describe("Admin access", () => {
 
     cy.visit("/library");
     cy.contains(itemName)
-      .closest("div.rounded-2xl")
+      .closest("[data-cy='product-card']")
       .within(() => {
         cy.get("[data-cy='product-edit-button']").click();
       });

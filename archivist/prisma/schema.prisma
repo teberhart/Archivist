@@ -16,6 +16,7 @@ model User {
   password      String?
   status        UserStatus @default(STANDARD)
   library       Library?
+  loans         Loan[]
   settings      UserSettings?
   accounts      Account[]
   sessions      Session[]
@@ -46,7 +47,21 @@ model Product {
   year      Int
   shelfId   String
   shelf     Shelf    @relation(fields: [shelfId], references: [id], onDelete: Cascade)
+  loans     Loan[]
   createdAt DateTime @default(now())
+}
+
+model Loan {
+  id           String   @id @default(cuid())
+  productId    String
+  product      Product  @relation(fields: [productId], references: [id], onDelete: Cascade)
+  userId       String
+  user         User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+  borrowerName String
+  borrowerNotes String?
+  lentAt       DateTime @default(now())
+  dueAt        DateTime?
+  returnedAt   DateTime?
 }
 
 model ProductType {

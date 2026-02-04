@@ -11,6 +11,10 @@ import {
   isValidProductYear,
 } from "@/app/library/productValidation";
 import {
+  isValidBorrowerName,
+  isValidBorrowerNotes,
+} from "@/app/library/lendingValidation";
+import {
   parseImportText,
   type ImportParseResult,
 } from "@/app/library/importParser";
@@ -373,12 +377,146 @@ export async function deleteProduct(formData: FormData) {
     redirect("/library?status=item-delete-notfound");
   }
 
+  const activeLoan = await prisma.loan.findFirst({
+    where: {
+      productId: product.id,
+      returnedAt: null,
+    },
+  });
+
+  if (activeLoan) {
+    redirect("/library?status=item-delete-lent");
+  }
+
   await prisma.product.delete({
     where: { id: product.id },
   });
 
   revalidatePath("/library");
   redirect("/library?status=item-deleted");
+}
+
+export async function lendProduct(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const rawProductId = formData.get("productId");
+  const rawBorrower = formData.get("borrowerName");
+  const rawNotes = formData.get("borrowerNotes");
+  const rawDueAt = formData.get("dueAt");
+
+  if (typeof rawProductId !== "string" || typeof rawBorrower !== "string") {
+    redirect("/library?status=loan-missing");
+  }
+
+  const productId = rawProductId.trim();
+  const borrowerName = rawBorrower.trim();
+  const borrowerNotes =
+    typeof rawNotes === "string" ? rawNotes.trim() : "";
+  const dueAtInput = typeof rawDueAt === "string" ? rawDueAt.trim() : "";
+
+  if (!productId || !borrowerName) {
+    redirect("/library?status=loan-missing");
+  }
+
+  if (!isValidBorrowerName(borrowerName)) {
+    redirect("/library?status=loan-invalid");
+  }
+
+  if (borrowerNotes && !isValidBorrowerNotes(borrowerNotes)) {
+    redirect("/library?status=loan-notes-invalid");
+  }
+
+  let dueAt: Date | null = null;
+  if (dueAtInput) {
+    const parsed = new Date(`${dueAtInput}T12:00:00Z`);
+    if (Number.isNaN(parsed.getTime())) {
+      redirect("/library?status=loan-date-invalid");
+    }
+    dueAt = parsed;
+  }
+
+  const product = await prisma.product.findFirst({
+    where: {
+      id: productId,
+      shelf: {
+        library: {
+          userId,
+        },
+      },
+    },
+  });
+
+  if (!product) {
+    redirect("/library?status=loan-notfound");
+  }
+
+  const existingLoan = await prisma.loan.findFirst({
+    where: {
+      productId: product.id,
+      returnedAt: null,
+    },
+  });
+
+  if (existingLoan) {
+    redirect("/library?status=loan-active");
+  }
+
+  await prisma.loan.create({
+    data: {
+      productId: product.id,
+      userId,
+      borrowerName,
+      borrowerNotes: borrowerNotes || null,
+      dueAt,
+    },
+  });
+
+  revalidatePath("/library");
+  redirect("/library?status=loan-created");
+}
+
+export async function returnProduct(formData: FormData) {
+  const session = await auth();
+  const userId = session?.user?.id;
+
+  if (!userId) {
+    redirect("/login");
+  }
+
+  const rawProductId = formData.get("productId");
+  if (typeof rawProductId !== "string") {
+    redirect("/library?status=loan-return-missing");
+  }
+
+  const productId = rawProductId.trim();
+  if (!productId) {
+    redirect("/library?status=loan-return-missing");
+  }
+
+  const loan = await prisma.loan.findFirst({
+    where: {
+      productId,
+      returnedAt: null,
+      userId,
+    },
+  });
+
+  if (!loan) {
+    redirect("/library?status=loan-return-notfound");
+  }
+
+  await prisma.loan.update({
+    where: { id: loan.id },
+    data: { returnedAt: new Date() },
+  });
+
+  revalidatePath("/library");
+  redirect("/library?status=loan-returned");
 }
 
 export type ImportProductsState = {

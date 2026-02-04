@@ -6,6 +6,8 @@ import {
   createProduct,
   deleteProduct,
   deleteShelf,
+  lendProduct,
+  returnProduct,
   updateProduct,
   updateShelf,
 } from "@/app/library/actions";
@@ -21,6 +23,7 @@ const statusMessages: Record<string, string> = {
   updated: "Shelf updated.",
   "item-created": "Item added to shelf.",
   "item-deleted": "Item deleted.",
+  "item-delete-lent": "Return the item before deleting it.",
   "item-delete-missing": "Unable to delete that item.",
   "item-delete-notfound": "Unable to find that item.",
   "item-missing": "Please complete all item fields.",
@@ -37,6 +40,17 @@ const statusMessages: Record<string, string> = {
     "Item type must be one of the allowed media types.",
   "item-edit-year": "Please enter a valid year.",
   "item-edit-notfound": "Unable to find that item.",
+  "loan-created": "Item lent.",
+  "loan-active": "This item is already marked as lent.",
+  "loan-missing": "Please add who you lent this to.",
+  "loan-invalid":
+    "Borrower details contain invalid characters. Use letters (including accents), numbers, spaces, and basic punctuation.",
+  "loan-notes-invalid": "Borrower notes are too long.",
+  "loan-date-invalid": "Please enter a valid due date.",
+  "loan-notfound": "Unable to start lending for that item.",
+  "loan-returned": "Item returned.",
+  "loan-return-missing": "Unable to return that item.",
+  "loan-return-notfound": "No active loan found for that item.",
   "edit-missing": "Please enter a shelf name.",
   "edit-invalid":
     "Shelf names must be 2-50 characters and use letters (including accents), numbers, spaces, apostrophes, ampersands, periods, and dashes.",
@@ -70,7 +84,19 @@ export default async function LibraryPage({
   try {
     library = await prisma.library.findUnique({
       where: { userId },
-      include: { shelves: { include: { products: true } } },
+      include: {
+        shelves: {
+          include: {
+            products: {
+              include: {
+                loans: {
+                  orderBy: { lentAt: "desc" },
+                },
+              },
+            },
+          },
+        },
+      },
     });
     productTypes = await getProductTypes();
   } catch (error) {
@@ -177,12 +203,45 @@ export default async function LibraryPage({
               {library.shelves.map((shelf, index) => (
                 <ShelfCard
                   key={shelf.id}
-                  shelf={shelf}
+                  shelf={{
+                    ...shelf,
+                    products: shelf.products.map((product) => {
+                      const loanHistory =
+                        product.loans?.map((loan) => {
+                          const toIso = (value?: Date | string | null) => {
+                            if (!value) {
+                              return null;
+                            }
+                            if (value instanceof Date) {
+                              return value.toISOString();
+                            }
+                            return new Date(value).toISOString();
+                          };
+                          return {
+                            id: loan.id,
+                            borrowerName: loan.borrowerName,
+                            borrowerNotes: loan.borrowerNotes ?? null,
+                            lentAt: toIso(loan.lentAt) ?? "",
+                            dueAt: toIso(loan.dueAt),
+                            returnedAt: toIso(loan.returnedAt),
+                          };
+                        }) ?? [];
+                      const activeLoan =
+                        loanHistory.find((loan) => !loan.returnedAt) ?? null;
+                      return {
+                        ...product,
+                        activeLoan,
+                        loanHistory,
+                      };
+                    }),
+                  }}
                   index={index}
                   productTypes={productTypes}
                   updateShelf={updateShelf}
                   createProduct={createProduct}
                   updateProduct={updateProduct}
+                  lendProduct={lendProduct}
+                  returnProduct={returnProduct}
                   deleteProduct={deleteProduct}
                   deleteShelf={deleteShelf}
                 />

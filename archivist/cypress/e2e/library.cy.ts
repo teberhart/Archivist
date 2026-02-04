@@ -77,7 +77,7 @@ describe("Library flow", () => {
     cy.visit("/library");
 
     cy.contains("Blade Runner").should("be.visible");
-    cy.get("[data-cy='product-edit-button']").first().click();
+    cy.get("[data-cy='product-card']").first().click();
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("body").type("{esc}");
@@ -91,7 +91,7 @@ describe("Library flow", () => {
     const newName = `Blade Runner ${Date.now()}`;
 
     cy.contains("Blade Runner").should("be.visible");
-    cy.get("[data-cy='product-edit-button']").first().click();
+    cy.get("[data-cy='product-card']").first().click();
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type(newName);
@@ -99,6 +99,41 @@ describe("Library flow", () => {
     cy.contains("button", "Save changes").click();
     cy.contains("Item updated.").should("be.visible");
     cy.contains(newName, { timeout: 10000 }).should("be.visible");
+  });
+
+  it("lends and returns an item", () => {
+    cy.login("thibaut.eberhart@gmail.com", "123456");
+    cy.visit("/library");
+
+    const borrowerName = `Alex ${Date.now()}`;
+    const dueDate = "2026-02-10";
+    const notes = "Meet at the studio next weekend.";
+
+    cy.contains("Blade Runner")
+      .closest("[data-cy='product-card']")
+      .click();
+
+    cy.get("[data-cy='product-edit-modal']").should("be.visible");
+    cy.get("input[name='borrowerName']").type(borrowerName);
+    cy.get("input[name='dueAt']").type(dueDate);
+    cy.get("textarea[name='borrowerNotes']").type(notes);
+    cy.get("[data-cy='product-lend-button']").click();
+
+    cy.contains("Item lent.").should("be.visible");
+    cy.contains(`Lent to ${borrowerName}`).should("be.visible");
+    cy.contains("Due").should("be.visible");
+
+    cy.contains(`Lent to ${borrowerName}`)
+      .closest("[data-cy='product-card']")
+      .click();
+
+    cy.get("[data-cy='product-edit-modal']").should("be.visible");
+    cy.contains("Lending history").should("be.visible");
+    cy.contains(borrowerName).should("be.visible");
+    cy.contains(notes).should("be.visible");
+    cy.get("[data-cy='product-return-button']").click();
+    cy.contains("Item returned.").should("be.visible");
+    cy.contains(`Lent to ${borrowerName}`).should("not.exist");
   });
 
   it("imports products from JSON", () => {

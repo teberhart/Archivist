@@ -15,12 +15,51 @@ import {
   PRODUCT_YEAR_MIN,
   getProductYearMax,
 } from "@/app/library/productValidation";
+import {
+  BORROWER_NAME_HELP,
+  BORROWER_NAME_MAX,
+  BORROWER_NAME_MIN,
+  BORROWER_NOTES_HELP,
+  BORROWER_NOTES_MAX,
+} from "@/app/library/lendingValidation";
+
+const loanDateFormatter = new Intl.DateTimeFormat("en-US", {
+  month: "short",
+  day: "numeric",
+  year: "numeric",
+});
+
+const formatLoanDate = (value: string) => {
+  return loanDateFormatter.format(new Date(value));
+};
+
+const formatInputDate = (value?: string | null) => {
+  if (!value) {
+    return "";
+  }
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) {
+    return "";
+  }
+  return date.toISOString().slice(0, 10);
+};
+
+type LoanHistoryItem = {
+  id: string;
+  borrowerName: string;
+  lentAt: string;
+  dueAt?: string | null;
+  returnedAt?: string | null;
+  borrowerNotes?: string | null;
+};
 
 type ShelfProduct = {
   id: string;
   name: string;
   type: string;
   year: number;
+  activeLoan?: LoanHistoryItem | null;
+  loanHistory?: LoanHistoryItem[];
 };
 
 type Shelf = {
@@ -36,6 +75,8 @@ type ShelfCardProps = {
   updateShelf: (formData: FormData) => Promise<void>;
   createProduct: (formData: FormData) => Promise<void>;
   updateProduct: (formData: FormData) => Promise<void>;
+  lendProduct: (formData: FormData) => Promise<void>;
+  returnProduct: (formData: FormData) => Promise<void>;
   deleteProduct: (formData: FormData) => Promise<void>;
   deleteShelf: (formData: FormData) => Promise<void>;
 };
@@ -47,6 +88,8 @@ export default function ShelfCard({
   updateShelf,
   createProduct,
   updateProduct,
+  lendProduct,
+  returnProduct,
   deleteProduct,
   deleteShelf,
 }: ShelfCardProps) {
@@ -65,6 +108,9 @@ export default function ShelfCard({
   const [editType, setEditType] = useState(productTypes[0] ?? "");
   const [editYear, setEditYear] = useState(String(getProductYearMax() - 1));
   const [portalTarget, setPortalTarget] = useState<HTMLElement | null>(null);
+  const [borrowerName, setBorrowerName] = useState("");
+  const [borrowerNotes, setBorrowerNotes] = useState("");
+  const [dueDate, setDueDate] = useState("");
   const formId = `edit-shelf-${shelf.id}`;
   const inputId = `${formId}-name`;
   const itemFormId = `add-item-${shelf.id}`;
@@ -76,6 +122,8 @@ export default function ShelfCard({
   const editTypeId = `${editFormId}-type`;
   const editYearId = `${editFormId}-year`;
   const deleteFormId = `${editFormId}-delete`;
+  const lendFormId = `${editFormId}-lend`;
+  const returnFormId = `${editFormId}-return`;
 
   const startEditing = () => {
     setName(shelf.name);
@@ -107,6 +155,9 @@ export default function ShelfCard({
     setEditName(product.name);
     setEditType(product.type);
     setEditYear(String(product.year));
+    setBorrowerName(product.activeLoan?.borrowerName ?? "");
+    setBorrowerNotes(product.activeLoan?.borrowerNotes ?? "");
+    setDueDate(formatInputDate(product.activeLoan?.dueAt));
     setIsAddingItem(false);
     setIsEditing(false);
   };
@@ -138,6 +189,19 @@ export default function ShelfCard({
       document.removeEventListener("keydown", handleKeyDown);
       document.body.style.overflow = previousOverflow;
     };
+  }, [editingProduct]);
+
+  useEffect(() => {
+    if (!editingProduct) {
+      setBorrowerName("");
+      setBorrowerNotes("");
+      setDueDate("");
+      return;
+    }
+
+    setBorrowerName(editingProduct.activeLoan?.borrowerName ?? "");
+    setBorrowerNotes(editingProduct.activeLoan?.borrowerNotes ?? "");
+    setDueDate(formatInputDate(editingProduct.activeLoan?.dueAt));
   }, [editingProduct]);
 
   const hasTypeOptions = productTypes.length > 0;
@@ -330,7 +394,17 @@ export default function ShelfCard({
             shelf.products.map((product) => (
               <div
                 key={product.id}
-                className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted"
+                className="rounded-2xl border border-line bg-wash p-4 text-sm text-muted transition hover:border-ink/40 hover:bg-white cursor-pointer"
+                role="button"
+                tabIndex={0}
+                onClick={() => startEditingItem(product)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" || event.key === " ") {
+                    event.preventDefault();
+                    startEditingItem(product);
+                  }
+                }}
+                data-cy="product-card"
               >
                 <div className="flex items-start justify-between gap-3">
                   <div>
@@ -343,11 +417,24 @@ export default function ShelfCard({
                     <p className="mt-2 text-xs text-muted">
                       Released {product.year}
                     </p>
+                    {product.activeLoan ? (
+                      <div className="mt-2 text-xs font-semibold text-amber-700">
+                        <p>Lent to {product.activeLoan.borrowerName}</p>
+                        {product.activeLoan.dueAt ? (
+                          <p className="mt-1 text-[0.7rem] font-medium text-amber-600">
+                            Due {formatLoanDate(product.activeLoan.dueAt)}
+                          </p>
+                        ) : null}
+                      </div>
+                    ) : null}
                   </div>
                   <button
                     className="rounded-full border border-line px-3 py-1 text-xs text-ink transition hover:border-ink"
                     type="button"
-                    onClick={() => startEditingItem(product)}
+                    onClick={(event) => {
+                      event.stopPropagation();
+                      startEditingItem(product);
+                    }}
                     data-cy="product-edit-button"
                   >
                     Edit
@@ -463,6 +550,155 @@ export default function ShelfCard({
                       {PRODUCT_NAME_HELP} Year must be between{" "}
                       {PRODUCT_YEAR_MIN} and {getProductYearMax()}.
                     </p>
+                    <div className="rounded-2xl border border-line bg-wash p-4">
+                      <p className="text-xs uppercase tracking-[0.3em] text-muted">
+                        Lending
+                      </p>
+                      {editingProduct.activeLoan ? (
+                        <div className="mt-3 text-sm text-ink">
+                          <p>
+                            Lent to{" "}
+                            <span className="font-semibold">
+                              {editingProduct.activeLoan.borrowerName}
+                            </span>
+                          </p>
+                          <p className="mt-1 text-xs text-muted">
+                            Since{" "}
+                            {formatLoanDate(editingProduct.activeLoan.lentAt)}
+                          </p>
+                          {editingProduct.activeLoan.dueAt ? (
+                            <p className="mt-1 text-xs text-muted">
+                              Due {formatLoanDate(editingProduct.activeLoan.dueAt)}
+                            </p>
+                          ) : null}
+                          {editingProduct.activeLoan.borrowerNotes ? (
+                            <p className="mt-2 text-xs text-muted">
+                              Notes: {editingProduct.activeLoan.borrowerNotes}
+                            </p>
+                          ) : null}
+                          <button
+                            className="mt-3 rounded-full border border-amber-200 px-4 py-2 text-xs font-semibold text-amber-700 transition hover:border-amber-300"
+                            type="submit"
+                            form={returnFormId}
+                            data-cy="product-return-button"
+                          >
+                            Mark returned
+                          </button>
+                        </div>
+                      ) : (
+                        <div className="mt-3 grid gap-2">
+                          <label
+                            className="text-xs text-muted"
+                            htmlFor={`${lendFormId}-borrower`}
+                          >
+                            Borrower
+                            <input
+                              id={`${lendFormId}-borrower`}
+                              name="borrowerName"
+                              type="text"
+                              required
+                              minLength={BORROWER_NAME_MIN}
+                              maxLength={BORROWER_NAME_MAX}
+                              title={BORROWER_NAME_HELP}
+                              value={borrowerName}
+                              onChange={(event) =>
+                                setBorrowerName(event.target.value)
+                              }
+                              className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+                              form={lendFormId}
+                            />
+                          </label>
+                          <label
+                            className="text-xs text-muted"
+                            htmlFor={`${lendFormId}-due`}
+                          >
+                            Due date
+                            <input
+                              id={`${lendFormId}-due`}
+                              name="dueAt"
+                              type="date"
+                              value={dueDate}
+                              onChange={(event) =>
+                                setDueDate(event.target.value)
+                              }
+                              className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+                              form={lendFormId}
+                            />
+                          </label>
+                          <label
+                            className="text-xs text-muted"
+                            htmlFor={`${lendFormId}-notes`}
+                          >
+                            Notes
+                            <textarea
+                              id={`${lendFormId}-notes`}
+                              name="borrowerNotes"
+                              maxLength={BORROWER_NOTES_MAX}
+                              value={borrowerNotes}
+                              onChange={(event) =>
+                                setBorrowerNotes(event.target.value)
+                              }
+                              className="mt-2 w-full rounded-2xl border border-line bg-white px-4 py-2 text-sm text-ink shadow-sm outline-none transition focus:border-ink"
+                              rows={2}
+                              form={lendFormId}
+                            />
+                          </label>
+                          <p className="text-xs text-muted">
+                            {BORROWER_NAME_HELP} {BORROWER_NOTES_HELP}
+                          </p>
+                          <button
+                            className="rounded-full bg-amber-100 px-4 py-2 text-xs font-semibold text-amber-800 transition hover:bg-amber-200"
+                            type="submit"
+                            form={lendFormId}
+                            data-cy="product-lend-button"
+                          >
+                            Lend item
+                          </button>
+                        </div>
+                      )}
+                    </div>
+                    <div className="rounded-2xl border border-line bg-white p-4">
+                      <p className="text-xs uppercase tracking-[0.3em] text-muted">
+                        Lending history
+                      </p>
+                      {editingProduct.loanHistory &&
+                      editingProduct.loanHistory.length > 0 ? (
+                        <div className="mt-3 grid gap-3 text-sm text-ink">
+                          {editingProduct.loanHistory.map((loan) => (
+                            <div key={loan.id} className="rounded-2xl bg-wash p-3">
+                              <div className="flex flex-wrap items-center justify-between gap-2">
+                                <p className="font-semibold">
+                                  {loan.borrowerName}
+                                </p>
+                                <span className="text-[0.65rem] uppercase tracking-[0.3em] text-muted">
+                                  {loan.returnedAt ? "Returned" : "Active"}
+                                </span>
+                              </div>
+                              <p className="mt-1 text-xs text-muted">
+                                Lent {formatLoanDate(loan.lentAt)}
+                                {loan.returnedAt
+                                  ? ` · Returned ${formatLoanDate(loan.returnedAt)}`
+                                  : ""}
+                              </p>
+                              {loan.dueAt ? (
+                                <p className="mt-1 text-xs text-muted">
+                                  Due {formatLoanDate(loan.dueAt)}
+                                </p>
+                              ) : null}
+                              {loan.borrowerNotes ? (
+                                <p className="mt-2 text-xs text-muted">
+                                  Notes: {loan.borrowerNotes}
+                                </p>
+                              ) : null}
+                            </div>
+                          ))}
+                        </div>
+                      ) : (
+                        <p className="mt-3 text-xs text-muted">
+                          No lending history yet.
+                        </p>
+                      )}
+                    </div>
                     <div className="flex flex-wrap items-center gap-2">
                       <button
                         className="rounded-full border border-rose-200 px-4 py-2 text-sm font-semibold text-rose-700 transition hover:border-rose-300"
@@ -491,6 +727,20 @@ export default function ShelfCard({
                     </div>
                   </form>
                   <form id={deleteFormId} action={deleteProduct}>
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={editingProduct.id}
+                    />
+                  </form>
+                  <form id={lendFormId} action={lendProduct}>
+                    <input
+                      type="hidden"
+                      name="productId"
+                      value={editingProduct.id}
+                    />
+                  </form>
+                  <form id={returnFormId} action={returnProduct}>
                     <input
                       type="hidden"
                       name="productId"

@@ -56,3 +56,15 @@ export async function createProduct(_formData: FormData) {
 export async function updateProduct(_formData: FormData) {
   return undefined;
 }
+
+export async function deleteProduct(_formData: FormData) {
+  return undefined;
+}
+
+export async function lendProduct(_formData: FormData) {
+  return undefined;
+}
+
+export async function returnProduct(_formData: FormData) {
+  return undefined;
+}
