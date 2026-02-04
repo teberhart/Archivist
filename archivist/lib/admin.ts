@@ -1,18 +1,14 @@
-export const ADMIN_EMAILS = ["thibaut.eberhart@gmail.com"];
+import { prisma } from "@/lib/prisma";
 
-type SessionLike = {
-  user?: {
-    email?: string | null;
-  } | null;
-} | null;
-
-export function isAdminEmail(email?: string | null): boolean {
-  if (!email) {
+export async function isAdminUserId(userId?: string | null): Promise<boolean> {
+  if (!userId) {
     return false;
   }
-  return ADMIN_EMAILS.includes(email);
-}
 
-export function isAdminSession(session: SessionLike): boolean {
-  return isAdminEmail(session?.user?.email ?? null);
+  const user = await prisma.user.findUnique({
+    where: { id: userId },
+    select: { status: true },
+  });
+
+  return user?.status === "ADMIN";
 }

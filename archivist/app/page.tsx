@@ -4,7 +4,7 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImportProductsModal from "@/app/library/ImportProductsModal";
 import { getShelfPulseData } from "@/app/home/shelfPulseData";
-import { isAdminSession } from "@/lib/admin";
+import { isAdminUserId } from "@/lib/admin";
 
 export default async function Home({
   searchParams,
@@ -13,7 +13,7 @@ export default async function Home({
 }) {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
-  const isAdmin = isAdminSession(session ?? null);
+  const isAdmin = await isAdminUserId(session?.user?.id);
   const params = searchParams ? await searchParams : {};
   const showSignupSuccess = params?.signup === "success";
   const libraryItems: {

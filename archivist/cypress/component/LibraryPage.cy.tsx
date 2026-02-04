@@ -4,6 +4,7 @@ import { __setSession } from "../mocks/auth";
 import {
   __setLibraryError,
   __setLibraryResult,
+  __setUserResult,
 } from "../mocks/prisma";
 
 const mountAsync = (element: Promise<ReactElement>) => {
@@ -15,6 +16,7 @@ const mountAsync = (element: Promise<ReactElement>) => {
 describe("LibraryPage", () => {
   beforeEach(() => {
     __setSession({ user: { id: "user-1" } });
+    __setUserResult({ status: "STANDARD" });
     __setLibraryError(null);
   });
 

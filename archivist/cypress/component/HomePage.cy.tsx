@@ -6,6 +6,7 @@ import {
   __setProductCount,
   __setTopShelf,
   __setWeeklyProductCount,
+  __setUserResult,
 } from "../mocks/prisma";
 
 const mountAsync = (element: Promise<ReactElement>) => {
@@ -18,6 +19,7 @@ describe("HomePage", () => {
   it("renders the logged-out hero", () => {
     __setSession(null);
     __setProductResults([]);
+    __setUserResult(null);
 
     mountAsync(HomePage({ searchParams: Promise.resolve({}) }));
 
@@ -30,6 +32,7 @@ describe("HomePage", () => {
 
   it("renders the logged-in preview", () => {
     __setSession({ user: { id: "user-1" } });
+    __setUserResult({ status: "STANDARD" });
     __setProductResults([
       {
         id: "item-1",
@@ -63,6 +66,7 @@ describe("HomePage", () => {
 
   it("renders the empty shelf pulse when there are no items", () => {
     __setSession({ user: { id: "user-1" } });
+    __setUserResult({ status: "STANDARD" });
     __setProductResults([]);
     __setProductCount(0);
     __setWeeklyProductCount(0);

@@ -16,7 +16,11 @@ const mountAsync = (element: Promise<ReactElement>) => {
 describe("SettingsPage", () => {
   beforeEach(() => {
     __setSession({ user: { id: "user-1" } });
-    __setUserResult({ name: "Thibaut", email: "thibaut@example.com" });
+    __setUserResult({
+      name: "Thibaut",
+      email: "thibaut@example.com",
+      status: "STANDARD",
+    });
     __setLibraryResult({ name: "Thibaut's Library" });
     __setUserSettingsResult({ showShelfPulse: true });
   });

@@ -1,7 +1,7 @@
 import type { ReactElement } from "react";
 import AdminPage from "../../app/admin/page";
 import { __setSession } from "../mocks/auth";
-import { __setUserList } from "../mocks/prisma";
+import { __setUserList, __setUserResult } from "../mocks/prisma";
 
 const mountAsync = (element: Promise<ReactElement>) => {
   cy.wrap(element).then((resolved) => {
@@ -14,6 +14,7 @@ describe("AdminPage", () => {
     __setSession({
       user: { id: "admin-1", email: "thibaut.eberhart@gmail.com" },
     });
+    __setUserResult({ status: "ADMIN" });
     __setUserList([
       {
         id: "user-1",
@@ -38,6 +39,16 @@ describe("AdminPage", () => {
           ],
         },
       },
+      {
+        id: "user-2",
+        name: "Guest User",
+        email: "guest@example.com",
+        status: "STANDARD",
+        library: {
+          name: "Guest Library",
+          shelves: [],
+        },
+      },
     ]);
   });
 
@@ -50,5 +61,7 @@ describe("AdminPage", () => {
     cy.contains("Library: Thibaut's Library").should("be.visible");
     cy.contains("Living Room (1 items)").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
+    cy.contains("Make VIP").should("be.visible");
+    cy.contains("Delete user").should("be.visible");
   });
 });

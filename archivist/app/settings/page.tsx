@@ -8,7 +8,7 @@ import {
   updatePassword,
   updatePreferences,
 } from "@/app/settings/actions";
-import { isAdminSession } from "@/lib/admin";
+import { isAdminUserId } from "@/lib/admin";
 
 const statusMessages: Record<string, { tone: "success" | "error"; message: string }> = {
   "account-updated": { tone: "success", message: "Account details updated." },
@@ -45,7 +45,7 @@ export default async function SettingsPage({
 }) {
   const session = await auth();
   const userId = session?.user?.id;
-  const isAdmin = isAdminSession(session ?? null);
+  const isAdmin = await isAdminUserId(userId);
 
   if (!userId) {
     redirect("/login");

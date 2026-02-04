@@ -2,8 +2,10 @@ import Link from "next/link";
 import { redirect } from "next/navigation";
 import { auth } from "@/auth";
 import { prisma } from "@/lib/prisma";
-import { isAdminSession } from "@/lib/admin";
+import { isAdminUserId } from "@/lib/admin";
 import type { UserStatus } from "@prisma/client";
+import { updateUserStatus, deleteUser } from "@/app/admin/actions";
+import AdminUserActions from "@/app/admin/AdminUserActions";
 
 const statusLabels: Record<UserStatus, string> = {
   STANDARD: "Standard",
@@ -41,7 +43,7 @@ function resolveStatusFilter(value?: string): UserStatus | null {
 export default async function AdminPage({
   searchParams,
 }: {
-  searchParams?: Promise<{ status?: string }>;
+  searchParams?: Promise<{ status?: string; message?: string }>;
 }) {
   const session = await auth();
 
@@ -49,13 +51,42 @@ export default async function AdminPage({
     redirect("/login");
   }
 
-  if (!isAdminSession(session)) {
+  if (!(await isAdminUserId(session.user.id))) {
     redirect("/");
   }
 
   const params = searchParams ? await searchParams : {};
   const statusParam = params?.status ?? "all";
+  const statusMessageParam = params?.message ?? "";
   const statusFilter = resolveStatusFilter(statusParam);
+  const statusMessage = statusMessageParam
+    ? {
+        "vip-enabled": {
+          tone: "success",
+          message: "User promoted to VIP.",
+        },
+        "vip-disabled": {
+          tone: "success",
+          message: "User returned to Standard.",
+        },
+        "user-deleted": {
+          tone: "success",
+          message: "User account deleted.",
+        },
+        "delete-self": {
+          tone: "error",
+          message: "You cannot delete your own account.",
+        },
+        "invalid-action": {
+          tone: "error",
+          message: "Invalid admin action.",
+        },
+        "protected-user": {
+          tone: "error",
+          message: "Admin accounts cannot be modified here.",
+        },
+      }[statusMessageParam] ?? null
+    : null;
 
   const users = await prisma.user.findMany({
     where: statusFilter ? { status: statusFilter } : undefined,
@@ -165,6 +196,18 @@ export default async function AdminPage({
             </div>
           </header>
 
+          {statusMessage ? (
+            <div
+              className={`mt-6 rounded-2xl border px-5 py-4 text-sm animate-fade-up ${
+                statusMessage.tone === "success"
+                  ? "border-emerald-200 bg-emerald-50 text-emerald-900"
+                  : "border-rose-200 bg-rose-50 text-rose-700"
+              }`}
+            >
+              {statusMessage.message}
+            </div>
+          ) : null}
+
           <section className="mt-8 grid gap-6">
             {users.length === 0 ? (
               <div className="rounded-3xl border border-line bg-card p-8 text-sm text-muted">
@@ -177,6 +220,7 @@ export default async function AdminPage({
                   (total, shelf) => total + shelf.products.length,
                   0,
                 );
+                const isSelf = session.user?.id === user.id;
 
                 return (
                   <article
@@ -209,6 +253,14 @@ export default async function AdminPage({
                         </span>
                       </div>
                     </div>
+
+                    <AdminUserActions
+                      userId={user.id}
+                      status={user.status}
+                      isSelf={isSelf}
+                      updateUserStatus={updateUserStatus}
+                      deleteUser={deleteUser}
+                    />
 
                     {shelves.length === 0 ? (
                       <p className="mt-4 text-sm text-muted">

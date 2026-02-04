@@ -54,6 +54,13 @@ export default defineConfig({
               ),
             },
             {
+              find: "@/app/admin/actions",
+              replacement: path.resolve(
+                __dirname,
+                "cypress/mocks/admin-actions.ts",
+              ),
+            },
+            {
               find: "next/link",
               replacement: path.resolve(__dirname, "cypress/mocks/next-link.tsx"),
             },

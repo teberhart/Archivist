@@ -4,8 +4,12 @@ let productResults: any[] = [];
 let productCount = 0;
 let weeklyProductCount = 0;
 let topShelf: { name: string; _count: { products: number } } | null = null;
-let userResult: { name?: string | null; email?: string | null; password?: string | null } | null =
-  null;
+let userResult: {
+  name?: string | null;
+  email?: string | null;
+  password?: string | null;
+  status?: string | null;
+} | null = null;
 let userSettingsResult: { showShelfPulse: boolean } | null = null;
 let userList: Array<{
   id: string;
@@ -50,7 +54,12 @@ export function __setTopShelf(result: { name: string; _count: { products: number
 }
 
 export function __setUserResult(
-  result: { name?: string | null; email?: string | null; password?: string | null } | null,
+  result: {
+    name?: string | null;
+    email?: string | null;
+    password?: string | null;
+    status?: string | null;
+  } | null,
 ) {
   userResult = result;
 }
