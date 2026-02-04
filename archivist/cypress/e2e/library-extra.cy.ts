@@ -79,7 +79,10 @@ describe("Library extras", () => {
       .click();
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
-    cy.get("[data-cy='product-delete-button']").click();
+    cy.get("[data-cy='product-delete-button']").then(($button) => {
+      const formId = $button.attr("form");
+      cy.get(`#${formId}`).submit();
+    });
     cy.contains("Return the item before deleting it.").should("be.visible");
     cy.contains("Blade Runner").should("be.visible");
   });

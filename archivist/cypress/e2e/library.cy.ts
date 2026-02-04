@@ -96,7 +96,7 @@ describe("Library flow", () => {
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
     cy.get("input[name='name']").clear().type(newName);
     cy.get("select[name='type']").select("DVD");
-    cy.contains("button", "Save changes").click();
+    cy.get("input[name='name']").closest("form").submit();
     cy.contains("Item updated.").should("be.visible");
     cy.contains(newName, { timeout: 10000 }).should("be.visible");
   });

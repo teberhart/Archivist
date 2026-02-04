@@ -117,7 +117,7 @@ describe("Admin access", () => {
         cy.get("input[name='name']").type(itemName);
         cy.get("select[name='type']").select(typeName);
         cy.get("input[name='year']").clear().type("1994");
-        cy.contains("button", "Save item").click();
+        cy.get("input[name='name']").closest("form").submit();
       });
 
     cy.contains(itemName).should("be.visible");
@@ -142,7 +142,10 @@ describe("Admin access", () => {
       });
 
     cy.get("[data-cy='product-edit-modal']").should("be.visible");
-    cy.get("[data-cy='product-delete-button']").click();
+    cy.get("[data-cy='product-delete-button']").then(($button) => {
+      const formId = $button.attr("form");
+      cy.get(`#${formId}`).submit();
+    });
     cy.contains("Item deleted.").should("be.visible");
     cy.contains(itemName).should("not.exist");
     cy.get("@productCountBeforeAdd").then((countBeforeAdd) => {
