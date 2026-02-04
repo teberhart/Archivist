@@ -10,7 +10,8 @@ const shelf = {
 
 describe("ShelfCard", () => {
   it("allows editing a shelf name", () => {
-    const updateShelf = cy.stub().resolves().as("updateShelf");
+    const updateShelf = cy.stub().resolves();
+    cy.wrap(updateShelf).as("updateShelf");
 
     cy.mount(
       <ShelfCard
@@ -33,7 +34,8 @@ describe("ShelfCard", () => {
   });
 
   it("shows the add item form and submits", () => {
-    const createProduct = cy.stub().resolves().as("createProduct");
+    const createProduct = cy.stub().resolves();
+    cy.wrap(createProduct).as("createProduct");
 
     cy.mount(
       <ShelfCard
@@ -55,7 +57,8 @@ describe("ShelfCard", () => {
   });
 
   it("opens and closes the product edit modal", () => {
-    const updateProduct = cy.stub().resolves().as("updateProduct");
+    const updateProduct = cy.stub().resolves();
+    cy.wrap(updateProduct).as("updateProduct");
 
     cy.mount(
       <ShelfCard
