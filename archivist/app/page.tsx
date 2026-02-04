@@ -4,6 +4,7 @@ import { auth, signOut } from "@/auth";
 import { prisma } from "@/lib/prisma";
 import ImportProductsModal from "@/app/library/ImportProductsModal";
 import { getShelfPulseData } from "@/app/home/shelfPulseData";
+import { isAdminSession } from "@/lib/admin";
 
 export default async function Home({
   searchParams,
@@ -12,6 +13,7 @@ export default async function Home({
 }) {
   const session = await auth();
   const isLoggedIn = Boolean(session?.user);
+  const isAdmin = isAdminSession(session ?? null);
   const params = searchParams ? await searchParams : {};
   const showSignupSuccess = params?.signup === "success";
   const libraryItems: {
@@ -119,6 +121,11 @@ export default async function Home({
             <Link className="hover:text-ink" href="/library">
               Library
             </Link>
+            {isAdmin ? (
+              <Link className="hover:text-ink" href="/admin">
+                Admin
+              </Link>
+            ) : null}
             <a className="hover:text-ink" href="#">
               Lending
             </a>
@@ -139,6 +146,14 @@ export default async function Home({
                 >
                   Settings
                 </Link>
+                {isAdmin ? (
+                  <Link
+                    className="hidden rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink md:inline-flex"
+                    href="/admin"
+                  >
+                    Admin
+                  </Link>
+                ) : null}
                 <ImportProductsModal
                   buttonClassName="hidden rounded-full bg-accent px-5 py-2 font-semibold text-ink shadow-sm transition hover:bg-accent-strong md:inline-flex"
                   buttonLabel="Import products"

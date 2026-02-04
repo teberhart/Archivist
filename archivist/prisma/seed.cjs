@@ -17,6 +17,7 @@ async function main() {
     where: { email: "thibaut.eberhart@gmail.com" },
     update: {
       name: "Thibaut Eberhart",
+      status: "ADMIN",
       library: {
         upsert: {
           create: {
@@ -77,6 +78,7 @@ async function main() {
       email: "thibaut.eberhart@gmail.com",
       name: "Thibaut Eberhart",
       password,
+      status: "ADMIN",
       library: {
         create: {
           name: "Thibaut's Library",

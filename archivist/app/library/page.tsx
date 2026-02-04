@@ -10,6 +10,7 @@ import {
 } from "@/app/library/actions";
 import ShelfCard from "@/app/library/ShelfCard";
 import ImportProductsModal from "@/app/library/ImportProductsModal";
+import { isAdminSession } from "@/lib/admin";
 
 const statusMessages: Record<string, string> = {
   created: "Shelf added successfully.",
@@ -43,6 +44,7 @@ export default async function LibraryPage({
 }) {
   const session = await auth();
   const userId = session?.user?.id;
+  const isAdmin = isAdminSession(session ?? null);
 
   if (!userId) {
     redirect("/login");
@@ -98,6 +100,14 @@ export default async function LibraryPage({
             >
               Back to home
             </Link>
+            {isAdmin ? (
+              <Link
+                className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                href="/admin"
+              >
+                Admin
+              </Link>
+            ) : null}
             <Link
               className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
               href="/settings"

@@ -8,6 +8,7 @@ import {
   updatePassword,
   updatePreferences,
 } from "@/app/settings/actions";
+import { isAdminSession } from "@/lib/admin";
 
 const statusMessages: Record<string, { tone: "success" | "error"; message: string }> = {
   "account-updated": { tone: "success", message: "Account details updated." },
@@ -44,6 +45,7 @@ export default async function SettingsPage({
 }) {
   const session = await auth();
   const userId = session?.user?.id;
+  const isAdmin = isAdminSession(session ?? null);
 
   if (!userId) {
     redirect("/login");
@@ -98,6 +100,14 @@ export default async function SettingsPage({
             >
               Back to library
             </Link>
+            {isAdmin ? (
+              <Link
+                className="rounded-full border border-line px-4 py-2 text-ink transition hover:border-ink"
+                href="/admin"
+              >
+                Admin
+              </Link>
+            ) : null}
           </div>
         </nav>
 

@@ -7,6 +7,20 @@ let topShelf: { name: string; _count: { products: number } } | null = null;
 let userResult: { name?: string | null; email?: string | null; password?: string | null } | null =
   null;
 let userSettingsResult: { showShelfPulse: boolean } | null = null;
+let userList: Array<{
+  id: string;
+  name?: string | null;
+  email?: string | null;
+  status?: string;
+  library?: {
+    name?: string | null;
+    shelves?: Array<{
+      id: string;
+      name: string;
+      products: Array<{ id: string; name: string; type: string; year: number }>;
+    }>;
+  } | null;
+}> = [];
 
 export function __setLibraryResult(result: any) {
   libraryResult = result;
@@ -45,6 +59,25 @@ export function __setUserSettingsResult(result: { showShelfPulse: boolean } | nu
   userSettingsResult = result;
 }
 
+export function __setUserList(
+  list: Array<{
+    id: string;
+    name?: string | null;
+    email?: string | null;
+    status?: string;
+    library?: {
+      name?: string | null;
+      shelves?: Array<{
+        id: string;
+        name: string;
+        products: Array<{ id: string; name: string; type: string; year: number }>;
+      }>;
+    } | null;
+  }>,
+) {
+  userList = list;
+}
+
 export const prisma = {
   library: {
     findUnique: async () => {
@@ -67,6 +100,7 @@ export const prisma = {
     create: async () => ({}),
     findUnique: async () => userResult,
     update: async () => userResult,
+    findMany: async () => userList,
   },
   shelf: {
     findFirst: async () => topShelf,
