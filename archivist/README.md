@@ -37,6 +37,31 @@ Run headless:
 Test data:
 - e2e specs call `cy.task("db:seed")`, which runs `node prisma/seed.cjs`.
 
+## Testing (Playwright)
+
+This project uses Playwright for both e2e and component testing.
+
+Prerequisites:
+- `DATABASE_URL` must be set (Playwright seeds via `node prisma/seed.cjs`).
+- Install browsers once with `pnpm playwright:install`.
+
+Run e2e:
+- `pnpm playwright:test`
+- `pnpm playwright:ui`
+- `pnpm playwright:report`
+
+Run component tests:
+- `pnpm playwright:ct`
+- `pnpm playwright:ct:ui`
+
+Auth:
+- Playwright logs in with the seeded admin user by default.
+- Override credentials with `PLAYWRIGHT_EMAIL` and `PLAYWRIGHT_PASSWORD`.
+
+Git hooks:
+- A `pre-push` hook runs `pnpm playwright:test` to block pushes on failures.
+- Set `HUSKY=0` to skip the hook for a single push.
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:
