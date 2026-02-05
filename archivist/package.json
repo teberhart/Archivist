@@ -18,7 +18,7 @@
     "playwright:report": "playwright show-report",
     "playwright:ct": "playwright test -c playwright-ct.config.ts",
     "playwright:ct:ui": "playwright test -c playwright-ct.config.ts --ui",
-    "prepare": "husky install",
+    "prepare": "husky install ../.husky",
     "postinstall": "prisma generate && node scripts/ensure-prisma-symlink.mjs",
     "prisma:link": "node scripts/ensure-prisma-symlink.mjs"
   },
