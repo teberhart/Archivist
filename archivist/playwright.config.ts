@@ -1,8 +1,9 @@
 import path from "node:path";
 import { defineConfig, devices } from "@playwright/test";
 import { loadEnv } from "./playwright/utils/env";
+import { resolveProjectRoot } from "./playwright/utils/project-root";
 
-loadEnv();
+loadEnv(resolveProjectRoot());
 
 const storageStatePath = path.join(
   process.cwd(),
@@ -14,6 +15,8 @@ const storageStatePath = path.join(
 export default defineConfig({
   testDir: "./playwright/e2e",
   outputDir: "playwright/test-results",
+  fullyParallel: false,
+  workers: 1,
   reporter: [
     ["list"],
     ["html", { outputFolder: "playwright-report", open: "never" }],

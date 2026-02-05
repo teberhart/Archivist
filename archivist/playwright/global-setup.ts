@@ -3,6 +3,7 @@ import { execSync } from "node:child_process";
 import fs from "node:fs";
 import path from "node:path";
 import { loadEnv } from "./utils/env";
+import { resolveProjectRoot } from "./utils/project-root";
 import { testUser } from "./utils/test-credentials";
 
 const storageStatePath = path.join(
@@ -20,12 +21,13 @@ const resolveBaseUrl = (config: FullConfig) => {
 };
 
 async function globalSetup(config: FullConfig) {
-  loadEnv();
+  const projectRoot = resolveProjectRoot();
+  loadEnv(projectRoot);
 
   execSync("node prisma/seed.cjs", {
     stdio: "inherit",
     env: process.env,
-    cwd: process.cwd(),
+    cwd: projectRoot,
   });
 
   fs.mkdirSync(path.dirname(storageStatePath), { recursive: true });

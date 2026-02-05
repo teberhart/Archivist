@@ -19,7 +19,14 @@ export const login = async (page: Page, user: LoginInput = testUser) => {
   await page.goto("/login");
   const emailInput = page.getByLabel(selectors.login.emailLabel);
 
-  if (!(await emailInput.isVisible({ timeout: 3000 }))) {
+  let inputVisible = false;
+  try {
+    inputVisible = await emailInput.isVisible({ timeout: 3000 });
+  } catch {
+    inputVisible = false;
+  }
+
+  if (!inputVisible) {
     await page.waitForURL((url) => !url.pathname.endsWith("/login"));
     return;
   }

@@ -2,8 +2,9 @@ import path from "node:path";
 import { defineConfig, devices } from "@playwright/experimental-ct-react";
 import react from "@vitejs/plugin-react";
 import { loadEnv } from "./playwright/utils/env";
+import { resolveProjectRoot } from "./playwright/utils/project-root";
 
-loadEnv();
+loadEnv(resolveProjectRoot());
 
 export default defineConfig({
   testDir: "./playwright/component",

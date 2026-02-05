@@ -3,8 +3,8 @@ import dotenv from "dotenv";
 
 const envFiles = [".env", ".env.local"];
 
-export const loadEnv = () => {
+export const loadEnv = (baseDir: string = process.cwd()) => {
   for (const file of envFiles) {
-    dotenv.config({ path: path.join(process.cwd(), file) });
+    dotenv.config({ path: path.join(baseDir, file) });
   }
 };
