@@ -117,7 +117,9 @@ test.describe("Admin access", () => {
     await expect(page.getByText(typeName)).toBeVisible();
 
     await page.goto("/library");
-    const countBeforeAdd = await getShelfItemCount(page, "Living Room");
+    const countBeforeAdd = await getShelfItemCount(page, "Living Room", {
+      minCount: 1,
+    });
 
     const shelfSection = page.locator("section", {
       has: page.getByRole("heading", { name: "Living Room" }),
@@ -133,7 +135,9 @@ test.describe("Admin access", () => {
     await expect(page.getByText(itemName)).toBeVisible();
     await expect(page.getByText("Pioneer")).toBeVisible();
 
-    const countAfterAdd = await getShelfItemCount(page, "Living Room");
+    const countAfterAdd = await getShelfItemCount(page, "Living Room", {
+      minCount: countBeforeAdd + 1,
+    });
     expect(countAfterAdd).toBe(countBeforeAdd + 1);
 
     await page.goto("/admin?tab=types");
@@ -170,7 +174,9 @@ test.describe("Admin access", () => {
     await expect(page.getByText("Item deleted.")).toBeVisible();
     await expect(page.getByText(itemName)).toHaveCount(0);
 
-    const countAfterDelete = await getShelfItemCount(page, "Living Room");
+    const countAfterDelete = await getShelfItemCount(page, "Living Room", {
+      minCount: countBeforeAdd,
+    });
     expect(countAfterDelete).toBe(countBeforeAdd);
 
     await page.goto("/admin?tab=types");
